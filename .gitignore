@@ -1,0 +1,4 @@
+node_modules/
+state/server.log
+state/server-err.log
+state/server-info

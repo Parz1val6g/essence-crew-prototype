@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash *)",
+      "PowerShell(wsl -d kali-linux -- bash -c \"find /home/joelt -name 'start-server.sh' 2>/dev/null | head -5; find /root -name 'start-server.sh' 2>/dev/null | head -5\")",
+      "PowerShell(wsl -d kali-linux -- bash -c \"ls ~/.claude/plugins/cache/ 2>/dev/null || echo 'no plugins'\")",
+      "PowerShell(New-Item *)",
+      "Bash(wsl -e grep -n \"</script>\" \"C:/Users/joelt/AppData/Local/Temp/brainstorm-essence/content/members.html\")",
+      "PowerShell(ls \"C:\\\\Users\\\\joelt\\\\AppData\\\\Local\\\\Temp\\\\brainstorm-essence\\\\content\\\\\"; \\(Invoke-WebRequest -Uri \"http://localhost:55178/members.html\" -UseBasicParsing\\).StatusCode)",
+      "PowerShell(Get-NetTCPConnection *)",
+      "PowerShell(Stop-Process *)",
+      "WebSearch",
+      "PowerShell($url = \"https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CarConcept/glTF-Binary/CarConcept.glb\"; try { $resp = Invoke-WebRequest -Uri $url -Method Head -UseBasicParsing; \"Status: $\\($resp.StatusCode\\), Size: $\\($resp.Headers['Content-Length']\\) bytes\" } catch { $_.Exception.Message })",
+      "Bash(node --check \"C:\\\\Users\\\\joelt\\\\AppData\\\\Local\\\\Temp\\\\brainstorm-essence\\\\content\\\\members.html\")",
+      "Bash(python3 *)",
+      "Bash(node --input-type=module)",
+      "Skill(code-review)",
+      "PowerShell(gh repo view Parz1val6g/essence-crew-prototype --json name,defaultBranchRef 2>&1)",
+      "PowerShell(gh *)",
+      "Read(//mnt/c/Users/joelt/AppData/Local/Temp/**)",
+      "Bash(node serve.js)",
+      "Bash(netstat -tlnp)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:55178/members.html\" -Method Head -TimeoutSec 3; \"Server OK: $\\($r.StatusCode\\)\" } catch { \"Server down: $_\" })",
+      "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:55178/members.html\" -UseBasicParsing -TimeoutSec 3 2>$null; $r.StatusCode)",
+      "PowerShell(Get-Content *)",
+      "PowerShell(Start-Sleep -Seconds 2; Invoke-WebRequest -Uri \"http://localhost:55178/members.html\" -UseBasicParsing -TimeoutSec 5 | Select-Object StatusCode)"
+    ]
+  }
+}
