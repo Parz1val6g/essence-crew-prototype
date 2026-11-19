@@ -1,7 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const root = '//wsl.localhost/kali-linux/home/joelt/Desktop/essence_crew/content';
+const root = path.join(__dirname, 'content');
 const exts = { html:'text/html', js:'application/javascript', css:'text/css', png:'image/png', jpg:'image/jpeg' };
 http.createServer((req, res) => {
   const f = path.join(root, req.url === '/' ? 'index.html' : req.url);
