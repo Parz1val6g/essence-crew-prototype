@@ -433,7 +433,7 @@ for(let si=0;si<4;si++){
 
 /* ── CINEMATIC HERO: WALL TITLE STENCIL + PROJECTOR LIGHT ── */
 function mkWallTitleTex(){
-  const W=isMobile?1240:2048, H=isMobile?480:661;
+  const W=isMobile?1240:2048, H=isMobile?480:512;
   const cv=document.createElement('canvas');
   cv.width=W; cv.height=H;
   const cx=cv.getContext('2d');
@@ -517,14 +517,19 @@ const wallTitleMesh=new THREE.Mesh(
 );
 wallTitleMesh.position.set(0,2.0,-14.49);
 scene.add(wallTitleMesh);
-wallTitleMesh.visible=false;
+wallTitleMesh.visible=!isMobile; // desktop: wall logo; mobile: hanging sign
 
-// ── HANGING SIGN + CHAIN PHYSICS ──
+// ── HANGING SIGN + CHAIN PHYSICS (mobile only) ──
 const SIGN_W=isMobile?3.1:9.3, SIGN_H=isMobile?1.2:3.0;
 const CHAIN_X=SIGN_W*0.5;
 const CHAIN_N=9;
 const LINK_L=0.180;
 const RAIL_Z0=-13.5, RAIL_Z1=isMobile?-1.8:-2.5, RAIL_Y=isMobile?4.0:4.5;
+
+// All hanging sign geometry lives in hangGroup — hidden on desktop
+const hangGroup=new THREE.Group();
+hangGroup.visible=isMobile;
+scene.add(hangGroup);
 
 // Ceiling rails
 const _railMat=new THREE.MeshStandardMaterial({color:0x4a5058,metalness:0.88,roughness:0.28});
@@ -532,7 +537,7 @@ const _railLen=Math.abs(RAIL_Z0)+2.5;
 [-CHAIN_X,CHAIN_X].forEach(rx=>{
   const r=new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.025,_railLen,8),_railMat);
   r.rotation.x=Math.PI/2; r.position.set(rx,RAIL_Y,RAIL_Z0*0.5-1.25);
-  scene.add(r);
+  hangGroup.add(r);
 });
 
 // Shared brushed-steel PBR for all chain hardware
@@ -543,7 +548,7 @@ const _steelDarkMat=new THREE.MeshStandardMaterial({color:0x6e7880,metalness:0.8
 const sliderL=new THREE.Mesh(new THREE.TorusGeometry(0.055,0.018,8,16),_steelMat);
 const sliderR=new THREE.Mesh(new THREE.TorusGeometry(0.055,0.018,8,16),_steelMat);
 sliderL.rotation.x=sliderR.rotation.x=Math.PI*0.5;
-scene.add(sliderL); scene.add(sliderR);
+hangGroup.add(sliderL); hangGroup.add(sliderR);
 
 // Stadium (oblong) chain link geometry — proper welded chain look
 // Path: two semicircles + two straight sections forming a rounded rectangle
@@ -560,7 +565,7 @@ scene.add(sliderL); scene.add(sliderR);
 })();
 const chainLinkMesh=new THREE.InstancedMesh(window._chainLinkGeo,_steelMat,2*(CHAIN_N-1));
 chainLinkMesh.castShadow=false;
-scene.add(chainLinkMesh);
+hangGroup.add(chainLinkMesh);
 const _d=new THREE.Object3D();
 const _UP=new THREE.Vector3(0,1,0);
 const _AXISX=new THREE.Vector3(1,0,0);
@@ -578,7 +583,7 @@ const signMesh=new THREE.Mesh(
   [_signEdgeMat,_signEdgeMat,_signEdgeMat,_signEdgeMat,_signFrontMat,_signBackMat]
 );
 signMesh.castShadow=true;
-scene.add(signMesh);
+hangGroup.add(signMesh);
 
 // Eyebolts — welded to sign top corners, give the chain a clean anchor point
 const _eyeboltShaftGeo=new THREE.CylinderGeometry(0.011,0.011,0.07,8);
@@ -691,7 +696,7 @@ const projectorLight=new THREE.SpotLight(0xf5ddb0,14,30,Math.PI/10,0.30,1.5);
 projectorLight.position.set(0,3.2,-7);
 projectorLight.target.position.set(0,2.0,-14.5);
 projectorLight.castShadow=false;
-scene.add(projectorLight); scene.add(projectorLight.target);
+hangGroup.add(projectorLight); hangGroup.add(projectorLight.target);
 
 // NO side walls — space is open and infinite, fades into fog
 
@@ -932,7 +937,7 @@ function animate(){
 
   updateTargets();
   const heroRaw=clamp(scrollY/vh(HERO_VH),0,1);
-  tickChain(heroRaw);
+  if(isMobile) tickChain(heroRaw);
 
   // ── Cinematic scroll-driven camera pullback ──
   // Phase A (0→45%): deep in garage → corridor mouth, projector lit wall recedes
@@ -1085,7 +1090,9 @@ function animate(){
   }
 
   // Cinematic lighting ramp: projector dims as garage PBR lights bloom in
-  projectorLight.intensity=lerp(14,0,easeOut(clamp(heroRaw/0.60,0,1)));
+  if(isMobile){
+    projectorLight.intensity=lerp(14,0,easeOut(clamp(heroRaw/0.60,0,1)));
+  }
   ambientLt.intensity=lerp(0.02,0.07,heroRaw);
   const baseSpotI=lerp(0,6.5,easeOut(clamp((heroRaw-0.15)/0.85,0,1)));
   spotLights.forEach((sp,i)=>{ sp.intensity=Math.max(0,baseSpotI+Math.sin(t*1.2+i*2.1)*0.5+Math.sin(t*8.3+i)*0.18); });
@@ -1094,8 +1101,12 @@ function animate(){
   uplighters.forEach(ul=>{ ul.intensity=ulI; });
   barLights.forEach(bl=>{ bl.intensity=lerp(2.0,4.5,easeOut(heroRaw)); });
   // Wall emissive also ramps up so logo stays readable at any camera distance
-  signMesh.material[4].emissiveIntensity=lerp(0.10,0.18,easeOut(heroRaw));
-  projectorLight.target.position.copy(signMesh.position);
+  if(isMobile){
+    signMesh.material[4].emissiveIntensity=lerp(0.10,0.18,easeOut(heroRaw));
+    projectorLight.target.position.copy(signMesh.position);
+  } else {
+    wallTitleMesh.material.emissiveIntensity=lerp(0.30,0.65,easeOut(heroRaw));
+  }
 
   composer.render();
 }
