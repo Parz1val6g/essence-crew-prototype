@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>essence.crew — 3D</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:#060402;}
+canvas{display:block;width:100%!important;height:100%!important;}
+.scanlines{position:fixed;inset:0;z-index:5;pointer-events:none;
+  background:repeating-linear-gradient(transparent,transparent 3px,rgba(0,0,0,.18) 3px,rgba(0,0,0,.18) 4px);}
+.edge{position:fixed;left:0;top:0;bottom:0;width:3px;z-index:6;
+  background:linear-gradient(180deg,transparent,#9b4a1e 15%,#c4612a 50%,#9b4a1e 85%,transparent);}
+nav{position:fixed;top:0;left:0;right:0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 50px;
+  background:linear-gradient(to bottom,rgba(6,4,2,.85),transparent);
+  font-family:Impact,'Arial Black',sans-serif;}
+.logo{font-size:1.1rem;letter-spacing:4px;color:#e8d898;-webkit-text-stroke:1px #7a3818;}
+.nav-links{display:flex;gap:24px;font-family:-apple-system,sans-serif;font-size:.68rem;
+  letter-spacing:3px;text-transform:uppercase;color:rgba(200,160,80,.35);}
+.ui{position:fixed;bottom:0;left:0;right:0;z-index:10;
+  padding:0 50px 50px;pointer-events:none;
+  background:linear-gradient(to top,rgba(6,4,2,.95) 0%,rgba(6,4,2,.55) 55%,transparent 100%);
+  font-family:Impact,'Arial Black',sans-serif;}
+.eyebrow{font-family:monospace;font-size:.55rem;letter-spacing:6px;text-transform:uppercase;
+  color:rgba(180,110,50,.5);margin-bottom:10px;}
+.title{font-size:clamp(3rem,7vw,5.5rem);font-weight:900;text-transform:uppercase;
+  line-height:.85;letter-spacing:3px;color:#e8d898;
+  -webkit-text-stroke:2px #7a3818;
+  text-shadow:4px 4px 0 rgba(5,2,0,.95),0 0 50px rgba(232,216,152,.06);}
+.crew{display:block;color:rgba(232,216,152,.35);-webkit-text-stroke:1.5px #5c2a10;text-shadow:none;}
+.uline{display:block;width:65px;height:1px;margin:12px 0 18px;background:linear-gradient(90deg,#7a3818,transparent);}
+.row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;}
+.sub{font-family:-apple-system,sans-serif;font-size:.78rem;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(200,160,80,.35);max-width:260px;line-height:1.65;}
+.cta{display:flex;gap:10px;pointer-events:auto;}
+.btn{font-family:-apple-system,sans-serif;font-size:.68rem;letter-spacing:3px;text-transform:uppercase;
+  padding:10px 24px;border:none;cursor:pointer;font-weight:700;background:#7a3818;color:#e8d898;}
+.btn-g{background:transparent;border:1px solid rgba(122,56,24,.4);
+  font-family:-apple-system,sans-serif;font-size:.68rem;letter-spacing:3px;text-transform:uppercase;
+  padding:10px 24px;cursor:pointer;color:rgba(200,160,80,.35);}
+.hint{position:fixed;top:85px;right:36px;z-index:20;font-family:monospace;font-size:.48rem;
+  letter-spacing:3px;color:rgba(200,160,80,.2);text-transform:uppercase;text-align:right;line-height:2;}
+#loading{position:fixed;inset:0;z-index:100;background:#060402;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .6s;}
+#loading.done{opacity:0;pointer-events:none;}
+#loading p{font-family:monospace;font-size:.58rem;letter-spacing:4px;color:rgba(200,160,80,.4);text-transform:uppercase;}
+.lbar{width:180px;height:1px;background:rgba(122,56,24,.2);overflow:hidden;position:relative;}
+.lbar::after{content:'';position:absolute;top:0;left:-100%;bottom:0;width:100%;
+  background:linear-gradient(90deg,transparent,#c4612a,#e8d898,#c4612a,transparent);
+  animation:lb 1.4s ease-in-out forwards;}
+@keyframes lb{to{left:0;}}
+</style>
+</head>
+<body>
+
+<div id="loading"><p>Carregando 3D</p><div class="lbar"></div></div>
+
+<nav>
+  <div class="logo">ESSENCE.CREW</div>
+  <div class="nav-links"><span>Eventos</span><span>Merch</span><span>Parcerias</span><span>Contacto</span></div>
+</nav>
+
+<canvas id="c"></canvas>
+<div class="scanlines"></div>
+<div class="edge"></div>
+<div class="hint">move o rato<br>scroll ↓</div>
+
+<div class="ui">
+  <div class="eyebrow">Car culture · Portugal · Est. MMXXIV</div>
+  <h1 class="title">ESSENCE<span class="crew">CREW</span></h1>
+  <span class="uline"></span>
+  <div class="row">
+    <p class="sub">Eventos de carros modificados.<br>Cultura. Comunidade. Velocidade.</p>
+    <div class="cta">
+      <button class="btn">Ver Eventos</button>
+      <button class="btn-g">Explorar Merch</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass }     from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+/* ─── RENDERER ─── */
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x060402);
+scene.fog = new THREE.FogExp2(0x060402, 0.048);
+
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+camera.position.set(0, 1.0, 7.5);
+
+/* ─── RESIZE ─── */
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  composer.setSize(w, h);
+}
+
+/* ─── POST FX ─── */
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(
+  new THREE.Vector2(innerWidth, innerHeight),
+  0.55,  // strength
+  0.4,   // radius
+  0.18   // threshold
+);
+composer.addPass(bloom);
+
+window.addEventListener('resize', resize);
+resize();
+
+/* ─── ENVIRONMENT (PMREMGenerator from gradient scene) ─── */
+const pmrem = new THREE.PMREMGenerator(renderer);
+{
+  const envS = new THREE.Scene();
+  // warm ceiling dome
+  envS.add(Object.assign(
+    new THREE.Mesh(new THREE.SphereGeometry(10,32,32),
+      new THREE.MeshBasicMaterial({side:THREE.BackSide,
+        color:0x1a0e06})), {renderOrder:-1}
+  ));
+  scene.environment = pmrem.fromScene(envS, 0.1).texture;
+}
+
+/* ─── LIGHTS ─── */
+// Key — warm terracotta
+const key = new THREE.DirectionalLight(0xc4612a, 3.5);
+key.position.set(5, 7, 4);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.near = 0.5;
+key.shadow.camera.far = 25;
+key.shadow.camera.left = -6;
+key.shadow.camera.right = 6;
+key.shadow.camera.top = 6;
+key.shadow.camera.bottom = -6;
+key.shadow.bias = -0.001;
+scene.add(key);
+
+// Fill — cool dark
+const fill = new THREE.DirectionalLight(0x1a1008, 1.2);
+fill.position.set(-5, 2, -4);
+scene.add(fill);
+
+// Rim light from behind
+const rim = new THREE.DirectionalLight(0xe8d898, 2.0);
+rim.position.set(0, 4, -7);
+scene.add(rim);
+
+// Ambient
+scene.add(new THREE.AmbientLight(0x1a1008, 0.5));
+
+// Moving ember point
+const ember = new THREE.PointLight(0xc4612a, 4, 10);
+ember.position.set(2, 0.5, 3);
+scene.add(ember);
+
+/* ─── PBR MATERIALS ─── */
+const MAT = {
+  chrome: new THREE.MeshPhysicalMaterial({
+    color: 0xd4b896, metalness: 1.0, roughness: 0.07,
+    envMapIntensity: 2.5, clearcoat: 1.0, clearcoatRoughness: 0.04
+  }),
+  darkMetal: new THREE.MeshPhysicalMaterial({
+    color: 0x1a1208, metalness: 0.9, roughness: 0.35, envMapIntensity: 1.5
+  }),
+  terra: new THREE.MeshPhysicalMaterial({
+    color: 0x7a3818, metalness: 0.7, roughness: 0.45, envMapIntensity: 1.2
+  }),
+  terra2: new THREE.MeshPhysicalMaterial({
+    color: 0xc4612a, metalness: 0.75, roughness: 0.3, envMapIntensity: 1.5,
+    emissive: new THREE.Color(0x3a1008), emissiveIntensity: 0.4
+  }),
+  gold: new THREE.MeshPhysicalMaterial({
+    color: 0xe8d898, metalness: 0.98, roughness: 0.04,
+    envMapIntensity: 3.0, clearcoat: 1.0, clearcoatRoughness: 0.02
+  }),
+  tire: new THREE.MeshStandardMaterial({
+    color: 0x0c0a08, metalness: 0.0, roughness: 0.95
+  }),
+  brake: new THREE.MeshPhysicalMaterial({
+    color: 0x2a2018, metalness: 0.85, roughness: 0.55
+  }),
+  ground: new THREE.MeshStandardMaterial({
+    color: 0x060402, roughness: 1.0, metalness: 0.05
+  })
+};
+
+/* ══════════════════════════════════════
+   WHEEL — full PBR with LatheGeometry
+══════════════════════════════════════ */
+const wheel = new THREE.Group();
+wheel.position.set(2.0, -0.1, 0);
+wheel.rotation.y = -0.5;
+
+// TIRE — lathe profile
+const tireVerts = [
+  [0.98,  0.15],
+  [1.03,  0.12],
+  [1.08,  0.07],
+  [1.11,  0.00],
+  [1.08, -0.07],
+  [1.03, -0.12],
+  [0.98, -0.15],
+].map(v => new THREE.Vector2(v[0], v[1]));
+const tireMesh = new THREE.Mesh(new THREE.LatheGeometry(tireVerts, 64), MAT.tire);
+tireMesh.castShadow = true;
+tireMesh.receiveShadow = true;
+wheel.add(tireMesh);
+
+// RIM BARREL — lathe profile (the inner metal part)
+const barrelVerts = [
+  [0.60,  0.14],
+  [0.72,  0.13],
+  [0.86,  0.09],
+  [0.94,  0.04],
+  [0.97,  0.00],
+  [0.94, -0.04],
+  [0.86, -0.09],
+  [0.72, -0.13],
+  [0.60, -0.14],
+].map(v => new THREE.Vector2(v[0], v[1]));
+const barrel = new THREE.Mesh(new THREE.LatheGeometry(barrelVerts, 48), MAT.darkMetal);
+barrel.castShadow = true;
+wheel.add(barrel);
+
+// OUTER CHROME LIP
+const outerLip = new THREE.Mesh(new THREE.TorusGeometry(0.97, 0.022, 10, 64), MAT.gold);
+wheel.add(outerLip);
+
+// INNER RIM RING
+const innerRing = new THREE.Mesh(new THREE.TorusGeometry(0.70, 0.016, 8, 64), MAT.chrome);
+wheel.add(innerRing);
+
+// SPOKES — 5 spokes, ExtrudeGeometry with real shape
+for (let s = 0; s < 5; s++) {
+  const angle = (s / 5) * Math.PI * 2;
+  const shape = new THREE.Shape();
+  // tapered spoke — wider at hub, narrower at rim
+  shape.moveTo(-0.055, 0.12);
+  shape.quadraticCurveTo(-0.08, 0.5, -0.038, 0.85);
+  shape.lineTo(0.038, 0.85);
+  shape.quadraticCurveTo(0.08, 0.5, 0.055, 0.12);
+  shape.closePath();
+
+  const exGeo = new THREE.ExtrudeGeometry(shape, {
+    depth: 0.05, bevelEnabled: true,
+    bevelSize: 0.012, bevelThickness: 0.012, bevelSegments: 3
+  });
+  const spoke = new THREE.Mesh(exGeo, MAT.chrome);
+  spoke.rotation.z = angle + Math.PI;
+  spoke.position.z = -0.025;
+  spoke.castShadow = true;
+  wheel.add(spoke);
+
+  // spoke inner cutout shadow (decorative dark plane)
+  const cut = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.07, 0.6),
+    new THREE.MeshBasicMaterial({ color: 0x060402, transparent: true, opacity: 0.5 })
+  );
+  cut.rotation.z = angle + Math.PI;
+  cut.position.set(Math.cos(angle + Math.PI) * 0.46, Math.sin(angle + Math.PI) * 0.46, 0.0);
+  wheel.add(cut);
+}
+
+// CENTER CAP
+const capCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.12, 0.07, 32), MAT.terra2);
+capCyl.rotation.x = Math.PI / 2;
+capCyl.position.z = 0.05;
+wheel.add(capCyl);
+
+// CENTER DISC
+const capDisc = new THREE.Mesh(new THREE.CircleGeometry(0.1, 32), MAT.gold);
+capDisc.position.z = 0.09;
+wheel.add(capDisc);
+
+// LUG NUTS x5
+for (let n = 0; n < 5; n++) {
+  const a = (n / 5) * Math.PI * 2 + Math.PI / 5;
+  const nut = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.055, 6), MAT.gold);
+  nut.rotation.x = Math.PI / 2;
+  nut.position.set(Math.cos(a) * 0.22, Math.sin(a) * 0.22, 0.075);
+  wheel.add(nut);
+}
+
+// BRAKE DISC
+const brakeDisc = new THREE.Mesh(new THREE.CylinderGeometry(0.57, 0.57, 0.04, 48), MAT.brake);
+brakeDisc.rotation.x = Math.PI / 2;
+brakeDisc.position.z = -0.08;
+brakeDisc.castShadow = true;
+wheel.add(brakeDisc);
+
+// CALIPER
+const caliper = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.17, 0.14), MAT.terra2);
+caliper.position.set(-0.52, -0.08, -0.09);
+caliper.castShadow = true;
+wheel.add(caliper);
+// caliper piston nubs
+for (let p = 0; p < 2; p++) {
+  const piston = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.06, 12), MAT.chrome);
+  piston.rotation.z = Math.PI / 2;
+  piston.position.set(-0.52, -0.08 + (p - 0.5) * 0.08, -0.05);
+  wheel.add(piston);
+}
+
+scene.add(wheel);
+
+/* ── GROUND ── */
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), MAT.ground);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -1.8;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// ground reflection streak
+const streak = new THREE.Mesh(
+  new THREE.PlaneGeometry(0.3, 3.5),
+  new THREE.MeshBasicMaterial({ color: 0xc4612a, transparent: true, opacity: 0.06 })
+);
+streak.rotation.x = -Math.PI / 2;
+streak.position.set(2.0, -1.79, 1.0);
+scene.add(streak);
+
+/* ── RETRO 80s GRID ROAD ── */
+const grid = new THREE.Group();
+grid.position.y = -1.79;
+
+for (let i = 0; i < 30; i++) {
+  const z = -i * 4;
+  const w = 16 * (1 + i * 0.09);
+  const op = Math.max(0.03, 0.38 - i * 0.012);
+  const col = i === 0 ? 0xc4612a : 0x7a3818;
+  grid.add(new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-w, 0, z), new THREE.Vector3(w, 0, z)]),
+    new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: op })
+  ));
+}
+for (let j = -6; j <= 6; j++) {
+  const pts = [];
+  for (let i = 0; i <= 30; i++) {
+    const z = -i * 4;
+    const w = 16 * (1 + i * 0.09);
+    pts.push(new THREE.Vector3((j / 6) * w, 0, z));
+  }
+  const op = j === 0 ? 0.3 : 0.07;
+  grid.add(new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(pts),
+    new THREE.LineBasicMaterial({ color: j === 0 ? 0xc4612a : 0x7a3818, transparent: true, opacity: op })
+  ));
+}
+scene.add(grid);
+
+/* ── PARTICLES (exhaust sparks) ── */
+const PC = 600;
+const pGeo = new THREE.BufferGeometry();
+const pp = new Float32Array(PC * 3);
+const pv = new Float32Array(PC * 3);
+const pl = new Float32Array(PC);
+
+function resetP(i) {
+  // spawn near caliper/brake area
+  pp[i*3]   = 1.5 + (Math.random() - 0.5) * 0.5;
+  pp[i*3+1] = -0.3 + (Math.random() - 0.5) * 0.3;
+  pp[i*3+2] = -0.2 + (Math.random() - 0.5) * 0.4;
+  pv[i*3]   = (Math.random() - 0.5) * 0.025;
+  pv[i*3+1] = Math.random() * 0.03 + 0.005;
+  pv[i*3+2] = (Math.random() - 0.5) * 0.02;
+  pl[i]     = Math.random();
+}
+for (let i = 0; i < PC; i++) resetP(i);
+pGeo.setAttribute('position', new THREE.BufferAttribute(pp, 3));
+
+const pMat = new THREE.PointsMaterial({
+  color: 0xc4612a, size: 0.04, transparent: true,
+  opacity: 0.75, sizeAttenuation: true
+});
+scene.add(new THREE.Points(pGeo, pMat));
+
+/* ── FLOATING DETAILS ── */
+const floaters = [];
+const fMats = [MAT.chrome, MAT.terra2, MAT.gold];
+const fGeos = [
+  new THREE.OctahedronGeometry(0.1, 0),
+  new THREE.IcosahedronGeometry(0.09, 0),
+  new THREE.TetrahedronGeometry(0.11, 0),
+];
+for (let i = 0; i < 12; i++) {
+  const m = new THREE.Mesh(fGeos[i % 3], fMats[i % 3]);
+  m.position.set(
+    (Math.random() - 0.5) * 10,
+    (Math.random() - 0.5) * 4 + 0.5,
+    (Math.random() - 0.5) * 6 - 1
+  );
+  m.castShadow = true;
+  m._rx = (Math.random() - 0.5) * 0.009;
+  m._ry = (Math.random() - 0.5) * 0.009;
+  m._phase = Math.random() * Math.PI * 2;
+  scene.add(m);
+  floaters.push(m);
+}
+
+/* ── MOUSE ── */
+let mx = 0, my = 0;
+document.addEventListener('mousemove', e => {
+  mx = (e.clientX / innerWidth - 0.5) * 2;
+  my = (e.clientY / innerHeight - 0.5) * 2;
+});
+
+/* ── ANIMATE ── */
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+
+  // Wheel spin + mouse tilt
+  wheel.rotation.z -= 0.011;
+  wheel.rotation.y += (-mx * 0.5 - wheel.rotation.y) * 0.04;
+  wheel.rotation.x += (-my * 0.22 - wheel.rotation.x) * 0.04;
+  wheel.position.y = Math.sin(t * 0.5) * 0.07 - 0.1;
+
+  // Grid road scroll
+  grid.position.z = (t * 1.6) % 4;
+
+  // Camera drift
+  camera.position.x += (mx * 0.7 - camera.position.x) * 0.03;
+  camera.position.y += (1.0 - my * 0.4 - camera.position.y) * 0.03;
+  camera.lookAt(0, 0, 0);
+
+  // Ember light pulse + orbit
+  ember.intensity = 3.5 + Math.sin(t * 2.5) * 1.0;
+  ember.position.x = Math.sin(t * 0.5) * 2.5 + 1;
+  ember.position.y = Math.cos(t * 0.4) * 0.5 + 0.5;
+
+  // Particles
+  for (let i = 0; i < PC; i++) {
+    pl[i] -= 0.007;
+    if (pl[i] <= 0) { resetP(i); continue; }
+    pp[i*3]   += pv[i*3];
+    pp[i*3+1] += pv[i*3+1];
+    pp[i*3+2] += pv[i*3+2];
+  }
+  pGeo.attributes.position.needsUpdate = true;
+  pMat.opacity = 0.55 + Math.sin(t * 5) * 0.15;
+
+  // Floaters
+  floaters.forEach(f => {
+    f.rotation.x += f._rx;
+    f.rotation.y += f._ry;
+    f.position.y += Math.sin(t * 0.5 + f._phase) * 0.003;
+  });
+
+  composer.render();
+}
+
+// done loading
+setTimeout(() => document.getElementById('loading').classList.add('done'), 1200);
+animate();
+</script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>essence.crew — hero mockups v2</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #050505; font-family: Impact, 'Arial Black', sans-serif; color: #fff; }
+
+.page-header {
+  text-align: center; padding: 28px 20px 10px;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.page-header h1 { font-size: 1rem; color: #aaa; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
+.page-header p { font-size: .78rem; color: #555; margin-top: 4px; }
+.versions { display: flex; flex-direction: column; gap: 0; }
+.divider { height: 1px; background: #1a1a1a; }
+.footer-prompt { text-align: center; padding: 28px; font-family: -apple-system, sans-serif; font-size: .75rem; color: #444; letter-spacing: 2px; text-transform: uppercase; }
+
+/* ── SHARED ── */
+.hero {
+  position: relative; height: 520px; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 0 60px; cursor: pointer;
+  border: 3px solid transparent; transition: border-color .2s;
+}
+.hero.selected { border-color: rgba(255,255,255,0.4); }
+.hero-label { position:absolute;top:20px;right:24px;font-family:monospace;font-size:.62rem;letter-spacing:3px;text-transform:uppercase;opacity:.5; }
+.version-tag { position:absolute;left:0;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;font-family:monospace;font-size:.58rem;letter-spacing:4px;opacity:.18;padding-left:16px; }
+.hero-nav { position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:22px 60px;border-bottom:1px solid;font-family:-apple-system,sans-serif;font-size:.72rem;letter-spacing:3px;text-transform:uppercase;z-index:2; }
+.nav-logo { font-family:Impact;font-size:1.1rem;letter-spacing:4px; }
+.nav-links { display:flex;gap:28px;opacity:.55; }
+.hero-eyebrow { font-family:monospace;font-size:.62rem;letter-spacing:6px;text-transform:uppercase;margin-bottom:16px;opacity:.5; }
+.hero-title { font-size:clamp(3.5rem,8vw,5.5rem);font-weight:900;text-transform:uppercase;line-height:.9;letter-spacing:2px;position:relative;z-index:1; }
+.hero-title .crew { display:block; }
+.hero-sub { margin-top:20px;font-family:-apple-system,sans-serif;font-size:.82rem;letter-spacing:2px;opacity:.5;text-transform:uppercase;max-width:320px;line-height:1.6; }
+.hero-cta { margin-top:32px;display:flex;gap:14px;align-items:center; }
+.btn { font-family:-apple-system,sans-serif;font-size:.72rem;letter-spacing:3px;text-transform:uppercase;padding:11px 26px;border:none;cursor:pointer;font-weight:700; }
+.btn-ghost { background:transparent;font-family:-apple-system,sans-serif;font-size:.72rem;letter-spacing:3px;text-transform:uppercase;padding:11px 26px;cursor:pointer;font-weight:400;border:1px solid; }
+.hero-bg-text { position:absolute;right:-20px;top:50%;transform:translateY(-50%);font-size:14rem;font-weight:900;text-transform:uppercase;letter-spacing:-8px;line-height:1;pointer-events:none;opacity:.04;z-index:0; }
+.hero-scroll-hint { position:absolute;bottom:24px;left:60px;font-family:monospace;font-size:.58rem;letter-spacing:4px;opacity:.3;text-transform:uppercase; }
+.pick-label { position:absolute;bottom:24px;right:24px;font-family:-apple-system,sans-serif;font-size:.68rem;letter-spacing:2px;text-transform:uppercase;padding:6px 14px;border-radius:4px;opacity:0;transition:opacity .2s; }
+.hero:hover .pick-label { opacity:1; }
+
+/* ════════════ RED ════════════ */
+.hero-red { background:#080808; }
+.hero-red::before { content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.008) 2px,rgba(255,255,255,.008) 4px); }
+.hero-red::after { content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,transparent,#cc0000 20%,#cc0000 80%,transparent); }
+.hero-red .hero-nav { border-bottom-color:rgba(180,0,0,.3); }
+.hero-red .nav-logo { color:#cc0000; }
+.hero-red .hero-eyebrow { color:#cc0000; }
+.hero-red .hero-title { color:#fff;text-shadow:4px 0 0 #cc0000,-1px 0 0 #cc0000; }
+.hero-red .hero-title .crew { color:#cc0000;text-shadow:none; }
+.hero-red .btn { background:#cc0000;color:#fff; }
+.hero-red .btn-ghost { border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.45); }
+.hero-red .hero-bg-text,.hero-red .hero-scroll-hint,.hero-red .version-tag,.hero-red .hero-label { color:#cc0000; }
+.hero-red .pick-label { background:rgba(204,0,0,.2);color:#cc0000;border:1px solid rgba(204,0,0,.3); }
+
+/* ════════════ OFF-WHITE ════════════ */
+.hero-white { background:#0d0d0d; }
+.hero-white::before { content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(transparent,transparent 3px,rgba(0,0,0,.18) 3px,rgba(0,0,0,.18) 4px); }
+.hero-white::after { content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 400px 300px at 30% 55%,rgba(216,208,192,.04) 0%,transparent 70%); }
+.hero-white .hero-nav { border-bottom-color:rgba(220,210,195,.12); color:#d8d0c0; }
+.hero-white .nav-logo { color:#d8d0c0; }
+.hero-white .hero-eyebrow { color:rgba(216,208,192,.55); }
+.hero-white .hero-title { color:#d8d0c0; }
+.hero-white .hero-title .crew { color:rgba(216,208,192,.4); }
+.hero-white .hero-sub { color:#d8d0c0; }
+.hero-white .btn { background:#d8d0c0;color:#0d0d0d; }
+.hero-white .btn-ghost { border-color:rgba(216,208,192,.22);color:rgba(216,208,192,.4); }
+.hero-white .hero-bg-text,.hero-white .hero-scroll-hint,.hero-white .version-tag,.hero-white .hero-label { color:#d8d0c0; }
+.hero-white .title-underline { display:block;width:80px;height:1px;background:rgba(216,208,192,.35);margin-top:10px; }
+.hero-white .pick-label { background:rgba(216,208,192,.08);color:#d8d0c0;border:1px solid rgba(216,208,192,.18); }
+
+/* ════════════ RETRO AUTUMN ════════════ */
+/*
+  Palette: deep burnt sienna, rusty ochre, warm dark brown
+  Vibe: 70s vinyl cover, old Polaroid, faded poster
+  NOT bright yellow — more like dried leaves, rust, aged paper
+*/
+.hero-autumn { background: #0e0906; }
+
+/* warm sepia film grain */
+.hero-autumn::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 500px 350px at 25% 60%, rgba(120,60,10,.1) 0%, transparent 65%),
+    radial-gradient(ellipse 300px 200px at 80% 30%, rgba(90,45,5,.07) 0%, transparent 60%);
+}
+.hero-autumn::after {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  /* vintage halftone grain */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 500 500' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+  background-size: cover;
+  mix-blend-mode: overlay;
+}
+
+/* rust left edge */
+.hero-autumn .rust-edge {
+  position:absolute; left:0; top:0; bottom:0; width:3px;
+  background: linear-gradient(180deg, transparent, #8b3a0f 15%, #c4580f 50%, #8b3a0f 85%, transparent);
+}
+
+/* horizontal scratch lines — vintage film feel */
+.hero-autumn .scratches {
+  position:absolute; inset:0; pointer-events:none; opacity:.06;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 28px,
+    rgba(200,120,40,.8) 28px, rgba(200,120,40,.8) 29px
+  );
+}
+
+.hero-autumn .hero-nav {
+  border-bottom-color: rgba(140,80,20,.25); color: #c88040;
+}
+.hero-autumn .nav-logo { color: #c06020; }
+.hero-autumn .hero-eyebrow { color: rgba(180,100,30,.65); }
+.hero-autumn .hero-title {
+  color: #b87030;
+  text-shadow: 0 0 80px rgba(180,100,30,.2), 2px 2px 0 rgba(0,0,0,.8);
+}
+.hero-autumn .hero-title .crew { color: rgba(160,80,20,.55); }
+.hero-autumn .hero-sub { color: #a06028; }
+.hero-autumn .btn { background: #9b4010; color: #f0d0a0; }
+.hero-autumn .btn-ghost { border-color: rgba(180,100,30,.25); color: rgba(180,100,30,.5); }
+.hero-autumn .hero-bg-text { color: #7a3010; opacity:.05; }
+.hero-autumn .hero-scroll-hint { color: #9a6030; }
+.hero-autumn .version-tag { color: #c88040; }
+.hero-autumn .hero-label { color: rgba(180,100,30,.5); }
+.hero-autumn .pick-label { background:rgba(155,64,16,.18);color:#c06020;border:1px solid rgba(155,64,16,.3); }
+
+/* vintage stamp in corner */
+.hero-autumn .stamp {
+  position:absolute; top:18px; left:60px;
+  font-family: monospace; font-size:.55rem; letter-spacing:4px;
+  color:rgba(160,80,20,.35); text-transform:uppercase;
+  border:1px solid rgba(160,80,20,.2); padding:3px 8px;
+  z-index:2;
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>essence.crew — hero section v2</h1>
+  <p>Preto+Vermelho · Preto+Off-white · Retro Autumn — clica para selecionar</p>
+</div>
+
+<div class="versions">
+
+<!-- RED -->
+<div class="hero hero-red" data-choice="red" onclick="this.classList.toggle('selected')">
+  <div class="hero-label">VERSION A · RED</div>
+  <div class="version-tag">ESSENCE · CREW</div>
+  <nav class="hero-nav">
+    <div class="nav-logo">ESSENCE.CREW</div>
+    <div class="nav-links"><span>Eventos</span><span>Merch</span><span>Parcerias</span><span>Contacto</span></div>
+  </nav>
+  <div style="margin-top:60px;position:relative;z-index:1;">
+    <div class="hero-eyebrow">Car culture · Portugal · Est. MMXXIV</div>
+    <div class="hero-title">ESSENCE<span class="crew">CREW</span></div>
+    <div class="hero-sub">Eventos de carros modificados.<br>Cultura. Comunidade. Velocidade.</div>
+    <div class="hero-cta">
+      <button class="btn">Ver Eventos</button>
+      <button class="btn-ghost">Explorar Merch</button>
+    </div>
+  </div>
+  <div class="hero-bg-text">EC</div>
+  <div class="hero-scroll-hint">↓ Scroll para explorar</div>
+  <div class="pick-label">Selecionar</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- OFF-WHITE -->
+<div class="hero hero-white" data-choice="offwhite" onclick="this.classList.toggle('selected')">
+  <div class="hero-label">VERSION B · OFF-WHITE</div>
+  <div class="version-tag">ESSENCE · CREW</div>
+  <nav class="hero-nav">
+    <div class="nav-logo">ESSENCE.CREW</div>
+    <div class="nav-links"><span>Eventos</span><span>Merch</span><span>Parcerias</span><span>Contacto</span></div>
+  </nav>
+  <div style="margin-top:60px;position:relative;z-index:1;">
+    <div class="hero-eyebrow">Car culture · Portugal · Est. MMXXIV</div>
+    <div class="hero-title">ESSENCE<span class="crew">CREW</span></div>
+    <span class="title-underline"></span>
+    <div class="hero-sub">Eventos de carros modificados.<br>Cultura. Comunidade. Velocidade.</div>
+    <div class="hero-cta">
+      <button class="btn">Ver Eventos</button>
+      <button class="btn-ghost">Explorar Merch</button>
+    </div>
+  </div>
+  <div class="hero-bg-text">EC</div>
+  <div class="hero-scroll-hint">↓ Scroll para explorar</div>
+  <div class="pick-label">Selecionar</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- RETRO AUTUMN -->
+<div class="hero hero-autumn" data-choice="autumn" onclick="this.classList.toggle('selected')">
+  <div class="rust-edge"></div>
+  <div class="scratches"></div>
+  <div class="hero-label">VERSION C · RETRO AUTUMN</div>
+  <div class="version-tag">ESSENCE · CREW</div>
+  <nav class="hero-nav">
+    <div class="nav-logo">ESSENCE.CREW</div>
+    <div class="nav-links"><span>Eventos</span><span>Merch</span><span>Parcerias</span><span>Contacto</span></div>
+  </nav>
+  <div class="stamp">Car Culture · PT</div>
+  <div style="margin-top:60px;position:relative;z-index:1;">
+    <div class="hero-eyebrow">Car culture · Portugal · Est. MMXXIV</div>
+    <div class="hero-title">ESSENCE<span class="crew">CREW</span></div>
+    <div class="hero-sub">Eventos de carros modificados.<br>Cultura. Comunidade. Velocidade.</div>
+    <div class="hero-cta">
+      <button class="btn">Ver Eventos</button>
+      <button class="btn-ghost">Explorar Merch</button>
+    </div>
+  </div>
+  <div class="hero-bg-text">EC</div>
+  <div class="hero-scroll-hint">↓ Scroll para explorar</div>
+  <div class="pick-label">Selecionar</div>
+</div>
+
+</div>
+
+<div class="footer-prompt">Clica em cada versão para selecionar · diz qual avança</div>
+
+<script>
+const s = document.createElement('script'); s.src = '/helper.js'; document.head.appendChild(s);
+document.querySelectorAll('.hero').forEach(hero => {
+  hero.addEventListener('click', () => {
+    const choice = hero.dataset.choice;
+    const label = hero.querySelector('.hero-label').textContent;
+    if (window.__brainstormSelect) window.__brainstormSelect(choice, label);
+  });
+});
+</script>
+</body>
+</html>

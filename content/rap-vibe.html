@@ -1,0 +1,154 @@
+<style>
+  body { background: #060606; }
+  .cards { display: flex; gap: 1.4rem; flex-wrap: wrap; justify-content: center; margin-top: 1.5rem; }
+  .card {
+    width: 290px; border-radius: 10px; overflow: hidden; cursor: pointer;
+    border: 2px solid #222; transition: all 0.25s; background: #0e0e0e;
+  }
+  .card:hover { transform: translateY(-5px); border-color: #555; }
+  .card.selected { border-color: #fff !important; box-shadow: 0 0 30px rgba(255,255,255,0.1); }
+  .card-preview { height: 210px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+
+  /* --- VARIANT 1: Pure B&W Concrete --- */
+  .preview-1 { background: #080808; }
+  .preview-1 .concrete {
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+    background-size: cover; opacity: 0.5;
+  }
+  .preview-1 .main-text {
+    font-family: Impact, 'Arial Black', sans-serif;
+    font-size: 2.4rem; font-weight: 900; color: #fff;
+    text-transform: uppercase; letter-spacing: 6px; z-index: 1;
+    text-shadow: 0 0 40px rgba(255,255,255,0.15);
+  }
+  .preview-1 .sub-text {
+    position: absolute; bottom: 14px; left: 0; right: 0; text-align: center;
+    font-family: monospace; font-size: 0.6rem; letter-spacing: 6px;
+    color: rgba(255,255,255,0.3); text-transform: uppercase; z-index: 1;
+  }
+  .preview-1 .slash {
+    position: absolute; top: 0; left: 40px;
+    width: 1px; height: 100%; background: rgba(255,255,255,0.05);
+    transform: rotate(15deg); transform-origin: top;
+  }
+
+  /* --- VARIANT 2: Black + Blood Red --- */
+  .preview-2 { background: #080808; }
+  .preview-2 .red-bar {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background: #cc0000;
+  }
+  .preview-2 .grain {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px, rgba(255,255,255,0.01) 2px, rgba(255,255,255,0.01) 4px
+    );
+  }
+  .preview-2 .main-text {
+    font-family: Impact, 'Arial Black', sans-serif;
+    font-size: 2.2rem; font-weight: 900; color: #fff;
+    text-transform: uppercase; letter-spacing: 4px; z-index: 1;
+    text-shadow: 3px 0 0 #cc0000;
+  }
+  .preview-2 .sub-text {
+    position: absolute; bottom: 14px; left: 0; right: 0; text-align: center;
+    font-family: monospace; font-size: 0.6rem; letter-spacing: 6px;
+    color: rgba(204,0,0,0.6); text-transform: uppercase; z-index: 1;
+  }
+  .preview-2 .cross {
+    position: absolute; top: 16px; right: 16px;
+    font-size: 0.7rem; color: #cc0000; font-family: monospace; z-index: 1;
+    opacity: 0.7;
+  }
+
+  /* --- VARIANT 3: Dirty White + Off-Black (like Eminem MMLP cover energy) --- */
+  .preview-3 { background: #111; }
+  .preview-3 .stencil-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 200px 150px at 50% 50%, rgba(255,255,255,0.03) 0%, transparent 70%);
+  }
+  .preview-3 .scanlines {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      transparent, transparent 3px, rgba(0,0,0,0.3) 3px, rgba(0,0,0,0.3) 4px
+    );
+  }
+  .preview-3 .main-text {
+    font-family: Impact, 'Arial Black', sans-serif;
+    font-size: 2.2rem; font-weight: 900;
+    color: #e8e0d0;
+    text-transform: uppercase; letter-spacing: 5px; z-index: 1;
+    filter: contrast(1.2);
+  }
+  .preview-3 .underline-bar {
+    position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+    width: 60px; height: 2px; background: #e8e0d0; z-index: 1; opacity: 0.5;
+  }
+  .preview-3 .sub-text {
+    position: absolute; bottom: 14px; left: 0; right: 0; text-align: center;
+    font-family: 'Courier New', monospace; font-size: 0.55rem; letter-spacing: 5px;
+    color: rgba(232,224,208,0.35); text-transform: uppercase; z-index: 1;
+  }
+
+  .card-body { padding: 14px 16px 18px; }
+  .card-body h3 { color: #fff; font-size: 0.95rem; margin: 0 0 5px 0; letter-spacing: 1px; }
+  .card-body p { color: #666; font-size: 0.8rem; margin: 0; line-height: 1.5; }
+  .ref { margin-top: 10px; color: #444; font-size: 0.72rem; font-style: italic; }
+  .accent-dot {
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px;
+    vertical-align: middle;
+  }
+</style>
+
+<h2>Qual acento de cor dentro do estilo rap gritty?</h2>
+<p class="subtitle">Preto dominante nos 3 — só muda o toque de cor. Vibe Eminem / Biggie / 50 Cent.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="bw" onclick="toggleSelect(this)">
+    <div class="card-preview preview-1">
+      <div class="concrete"></div>
+      <div class="slash"></div>
+      <div class="main-text">ESSENCE</div>
+      <div class="sub-text">CREW · EST · MMXXIV</div>
+    </div>
+    <div class="card-body">
+      <h3>Preto puro / sem cor</h3>
+      <p>Só preto e branco. Textura de concreto. Raw como capa do <em>The Marshall Mathers LP</em>.</p>
+      <div class="ref">→ Eminem · Biggie · Wu-Tang</div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="red" onclick="toggleSelect(this)">
+    <div class="card-preview preview-2">
+      <div class="grain"></div>
+      <div class="red-bar"></div>
+      <div class="cross">✕</div>
+      <div class="main-text">ESSENCE</div>
+      <div class="sub-text">CREW · EST · MMXXIV</div>
+    </div>
+    <div class="card-body">
+      <h3>Preto + Vermelho sangue</h3>
+      <p>Acento vermelho agressivo. Energia de <em>Get Rich or Die Tryin'</em>. Perigo, rua, intensidade.</p>
+      <div class="ref">→ 50 Cent · DMX · NWA</div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="offwhite" onclick="toggleSelect(this)">
+    <div class="card-preview preview-3">
+      <div class="stencil-bg"></div>
+      <div class="scanlines"></div>
+      <div class="main-text">ESSENCE</div>
+      <div class="underline-bar"></div>
+      <div class="sub-text">CREW · EST · MMXXIV</div>
+    </div>
+    <div class="card-body">
+      <h3>Preto + Branco sujo / off-white</h3>
+      <p>Tipografia desgastada, scanlines, stencil. Vibe underground, grafismo de rua antigo.</p>
+      <div class="ref">→ Snoop · Nas · Jay-Z</div>
+    </div>
+  </div>
+
+</div>

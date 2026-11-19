@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>essence.crew — 3D demo</title>
+<style>
+* { margin:0;padding:0;box-sizing:border-box; }
+body { background:#0a0804;overflow-x:hidden;font-family:Impact,'Arial Black',sans-serif; }
+
+/* ── HERO WITH 3D CANVAS ── */
+.hero {
+  position:relative;height:100vh;min-height:600px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0 60px 56px;
+}
+#three-canvas {
+  position:absolute;inset:0;z-index:0;
+}
+/* gradient overlay so text is readable */
+.hero-overlay {
+  position:absolute;inset:0;z-index:1;
+  background:
+    linear-gradient(to bottom, rgba(8,6,4,.15) 0%, rgba(8,6,4,0) 20%, rgba(8,6,4,0) 45%, rgba(8,6,4,.92) 100%),
+    linear-gradient(to right, rgba(8,6,4,.65) 0%, rgba(8,6,4,0) 50%);
+}
+.scanlines { position:absolute;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(transparent,transparent 3px,rgba(0,0,0,.18) 3px,rgba(0,0,0,.18) 4px); }
+.edge { position:absolute;left:0;top:0;bottom:0;width:3px;z-index:3;background:linear-gradient(180deg,transparent,#9b4a1e 15%,#c4612a 50%,#9b4a1e 85%,transparent); }
+.hero-body { position:relative;z-index:5; }
+.hero-eyebrow { font-family:monospace;font-size:.58rem;letter-spacing:6px;text-transform:uppercase;color:rgba(180,110,50,.55);margin-bottom:12px; }
+.hero-title { font-size:clamp(3.5rem,8vw,6rem);font-weight:900;text-transform:uppercase;line-height:.88;letter-spacing:3px;color:#e8d898;-webkit-text-stroke:2px #7a3818;text-shadow:0 0 80px rgba(232,216,152,.1),3px 3px 0 rgba(20,8,0,.8); }
+.hero-title .crew { display:block;color:rgba(232,216,152,.45);-webkit-text-stroke:1.5px #5c2a10;text-shadow:none; }
+.hero-uline { display:block;width:70px;height:1px;margin:10px 0 18px;background:linear-gradient(90deg,#7a3818,transparent); }
+.hero-row { display:flex;align-items:flex-end;justify-content:space-between;gap:20px; }
+.hero-sub { font-size:.8rem;letter-spacing:2px;text-transform:uppercase;color:rgba(200,160,80,.4);max-width:280px;line-height:1.65; }
+.hero-cta { display:flex;gap:12px; }
+.btn { font-size:.7rem;letter-spacing:3px;text-transform:uppercase;padding:11px 26px;border:none;cursor:pointer;font-weight:700;background:#7a3818;color:#e8d898; }
+.btn-ghost { background:transparent;border:1px solid rgba(122,56,24,.35);font-size:.7rem;letter-spacing:3px;text-transform:uppercase;padding:11px 26px;cursor:pointer;color:rgba(200,160,80,.4); }
+
+/* 3D hint label */
+.three-hint { position:absolute;top:88px;right:40px;z-index:5;font-family:monospace;font-size:.52rem;letter-spacing:3px;color:rgba(200,160,80,.25);text-transform:uppercase;text-align:right; }
+.three-hint span { display:block;margin-bottom:4px; }
+
+/* ── ABOUT 3D CARDS SECTION ── */
+.about-section { padding:100px 60px;background:#0d0b08;position:relative;overflow:hidden; }
+.section-label { font-family:monospace;font-size:.55rem;letter-spacing:5px;text-transform:uppercase;color:rgba(180,110,50,.5);margin-bottom:14px; }
+.section-title { font-size:clamp(2rem,5vw,3.5rem);font-weight:900;text-transform:uppercase;letter-spacing:2px;color:#e8d898;-webkit-text-stroke:1.5px #7a3818;text-shadow:2px 2px 0 rgba(20,8,0,.7);line-height:.9; }
+.section-title .dim { color:rgba(232,216,152,.4);-webkit-text-stroke:1px #5c2a10;text-shadow:none; }
+.section-divider { width:80px;height:1px;background:linear-gradient(90deg,#7a3818,transparent);margin:14px 0 48px; }
+
+#about-canvas { width:100%;height:420px;display:block;border:1px solid rgba(122,56,24,.15); }
+
+/* labels below canvas */
+.canvas-note { font-family:monospace;font-size:.55rem;letter-spacing:3px;color:rgba(200,160,80,.25);text-transform:uppercase;text-align:center;margin-top:12px; }
+
+/* ── LEGEND ── */
+.legend { padding:40px 60px;background:#080604;border-top:1px solid rgba(122,56,24,.12); }
+.legend h3 { font-family:monospace;font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:rgba(200,160,80,.5);margin-bottom:20px; }
+.legend-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px; }
+.legend-item { background:#0e0b08;border:1px solid rgba(122,56,24,.15);border-radius:4px;padding:14px 16px; }
+.legend-item h4 { font-family:monospace;font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:#c4612a;margin-bottom:6px; }
+.legend-item p { font-size:.72rem;color:rgba(200,160,80,.35);line-height:1.5; }
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <canvas id="three-canvas"></canvas>
+  <div class="hero-overlay"></div>
+  <div class="scanlines"></div>
+  <div class="edge"></div>
+  <div class="three-hint">
+    <span>← 3D ao vivo</span>
+    <span>move o rato</span>
+  </div>
+  <div class="hero-body">
+    <div class="hero-eyebrow">Car culture · Portugal · Est. MMXXIV</div>
+    <h1 class="hero-title">ESSENCE<span class="crew">CREW</span></h1>
+    <span class="hero-uline"></span>
+    <div class="hero-row">
+      <p class="hero-sub">Eventos de carros modificados.<br>Cultura. Comunidade. Velocidade.</p>
+      <div class="hero-cta">
+        <button class="btn">Ver Eventos</button>
+        <button class="btn-ghost">Explorar Merch</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ABOUT 3D CARDS ══ -->
+<section class="about-section">
+  <div class="section-label">— Quem Somos · 3D Members</div>
+  <h2 class="section-title">THE<span class="dim"> CREW</span></h2>
+  <div class="section-divider"></div>
+  <canvas id="about-canvas"></canvas>
+  <p class="canvas-note">↑ hover sobre cada membro · 3D tilt + nome + carro</p>
+</section>
+
+<!-- ══ LEGEND ══ -->
+<div class="legend">
+  <h3>Elementos 3D planeados com Three.js + R3F</h3>
+  <div class="legend-grid">
+    <div class="legend-item">
+      <h4>Hero — Roda 3D</h4>
+      <p>Roda de carro wireframe a rodar lentamente. Reage ao mover do rato (tilt). Partículas de faísca ao scroll.</p>
+    </div>
+    <div class="legend-item">
+      <h4>Hero — Partículas</h4>
+      <p>Sistema de partículas douradas flutuantes no fundo. Simulam poeira / faíscas de motor.</p>
+    </div>
+    <div class="legend-item">
+      <h4>Members — Cards 3D</h4>
+      <p>Cards com fotos reais dos membros em 3D. Tilt ao hover. Flip para ver o carro atrás.</p>
+    </div>
+    <div class="legend-item">
+      <h4>Texto 3D "ESSENCE"</h4>
+      <p>Letras em 3D extrudido que emergem do fundo ao scroll. Material metálico / terracota.</p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+
+/* ══════════════════════════════
+   HERO SCENE — wheel + particles
+══════════════════════════════ */
+(function heroScene() {
+  const canvas = document.getElementById('three-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  camera.position.set(0, 0, 5);
+
+  function resize() {
+    const w = canvas.parentElement.clientWidth;
+    const h = canvas.parentElement.clientHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ── WHEEL (torus = rim + torus smaller = tire) ──
+  const wheelGroup = new THREE.Group();
+  wheelGroup.position.set(2.2, 0, 0);
+
+  // outer tire
+  const tireMat = new THREE.MeshBasicMaterial({ color: 0x7a3818, wireframe: true, transparent: true, opacity: 0.5 });
+  const tire = new THREE.Mesh(new THREE.TorusGeometry(1.4, 0.35, 16, 48), tireMat);
+  wheelGroup.add(tire);
+
+  // rim spokes — 5 spokes
+  const spokeMat = new THREE.MeshBasicMaterial({ color: 0xe8d898, wireframe: false, transparent: true, opacity: 0.6 });
+  for (let i = 0; i < 5; i++) {
+    const spoke = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.04, 0.04, 1.2, 6),
+      spokeMat
+    );
+    const angle = (i / 5) * Math.PI * 2;
+    spoke.position.set(Math.cos(angle) * 0.6, Math.sin(angle) * 0.6, 0);
+    spoke.rotation.z = angle + Math.PI / 2;
+    wheelGroup.add(spoke);
+  }
+
+  // center hub
+  const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.08, 16), spokeMat);
+  hub.rotation.x = Math.PI / 2;
+  wheelGroup.add(hub);
+
+  // rim ring
+  const rimMat = new THREE.MeshBasicMaterial({ color: 0xe8d898, wireframe: true, transparent: true, opacity: 0.3 });
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(1.05, 0.06, 8, 48), rimMat);
+  wheelGroup.add(rim);
+
+  scene.add(wheelGroup);
+
+  // ── PARTICLES ──
+  const pCount = 180;
+  const pGeo = new THREE.BufferGeometry();
+  const pPos = new Float32Array(pCount * 3);
+  const pSizes = new Float32Array(pCount);
+  for (let i = 0; i < pCount; i++) {
+    pPos[i*3]   = (Math.random() - 0.5) * 10;
+    pPos[i*3+1] = (Math.random() - 0.5) * 6;
+    pPos[i*3+2] = (Math.random() - 0.5) * 4;
+    pSizes[i]   = Math.random() * 3 + 1;
+  }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+  pGeo.setAttribute('size', new THREE.BufferAttribute(pSizes, 1));
+  const pMat = new THREE.PointsMaterial({ color: 0xe8d898, size: 0.04, transparent: true, opacity: 0.35 });
+  scene.add(new THREE.Points(pGeo, pMat));
+
+  // ── FLOATING CUBES (small, like bolts) ──
+  const cubeMat = new THREE.MeshBasicMaterial({ color: 0xc4612a, wireframe: true, transparent: true, opacity: 0.3 });
+  const cubes = [];
+  for (let i = 0; i < 8; i++) {
+    const s = Math.random() * 0.12 + 0.04;
+    const c = new THREE.Mesh(new THREE.BoxGeometry(s, s, s), cubeMat);
+    c.position.set((Math.random()-0.5)*7, (Math.random()-0.5)*4, (Math.random()-0.5)*2);
+    c._speed = Math.random() * 0.008 + 0.003;
+    c._offset = Math.random() * Math.PI * 2;
+    scene.add(c);
+    cubes.push(c);
+  }
+
+  // ── MOUSE TILT ──
+  let mx = 0, my = 0;
+  document.addEventListener('mousemove', e => {
+    mx = (e.clientX / window.innerWidth - 0.5) * 2;
+    my = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  // ── SCROLL PARALLAX ──
+  let scrollY = 0;
+  window.addEventListener('scroll', () => { scrollY = window.scrollY; }, { passive: true });
+
+  const clock = new THREE.Clock();
+  function animate() {
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+
+    // wheel rotation
+    wheelGroup.rotation.z -= 0.008;
+    // tilt with mouse
+    wheelGroup.rotation.y += (mx * 0.4 - wheelGroup.rotation.y) * 0.05;
+    wheelGroup.rotation.x += (-my * 0.2 - wheelGroup.rotation.x) * 0.05;
+    // scroll: wheel moves up and out
+    wheelGroup.position.y = -scrollY * 0.003;
+    wheelGroup.position.z = -scrollY * 0.002;
+
+    // camera tilt
+    camera.position.x += (mx * 0.3 - camera.position.x) * 0.03;
+    camera.position.y += (-my * 0.2 - camera.position.y) * 0.03;
+    camera.lookAt(scene.position);
+
+    // cubes float
+    cubes.forEach(c => {
+      c.rotation.x += c._speed;
+      c.rotation.y += c._speed * 0.7;
+      c.position.y += Math.sin(t + c._offset) * 0.002;
+    });
+
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+
+/* ══════════════════════════════
+   ABOUT — MEMBER 3D CARDS
+══════════════════════════════ */
+(function aboutScene() {
+  const canvas = document.getElementById('about-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 2, 0.1, 100);
+  camera.position.set(0, 0, 6);
+
+  function resize() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ── 3 MEMBER CARDS ──
+  const members = [
+    { name: 'MIGUEL', car: 'BMW E46 M3', x: -2.8 },
+    { name: 'TIAGO',  car: 'Honda EG',   x:  0   },
+    { name: 'JOÃO',   car: 'Golf R Mk7', x:  2.8 },
+  ];
+
+  const cardMat = new THREE.MeshBasicMaterial({ color: 0x1a1208, side: THREE.DoubleSide });
+  const borderMat = new THREE.MeshBasicMaterial({ color: 0x7a3818, wireframe: false });
+  const cardGroups = [];
+
+  members.forEach(m => {
+    const g = new THREE.Group();
+    g.position.x = m.x;
+
+    // card body
+    const card = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 2.9), cardMat);
+    g.add(card);
+
+    // border frame (4 thin boxes)
+    const bMat = new THREE.MeshBasicMaterial({ color: 0x7a3818 });
+    [[2.1, 0.03, 0, 1.45], [2.1, 0.03, 0, -1.45], [0.03, 2.9, -1.05, 0], [0.03, 2.9, 1.05, 0]]
+      .forEach(([w,h,bx,by]) => {
+        const b = new THREE.Mesh(new THREE.PlaneGeometry(w, h), bMat);
+        b.position.set(bx, by, 0.01);
+        g.add(b);
+      });
+
+    // name placeholder (yellow lines)
+    const lineMat = new THREE.MeshBasicMaterial({ color: 0xe8d898, transparent: true, opacity: 0.7 });
+    const line1 = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.08), lineMat);
+    line1.position.set(0, -0.9, 0.02);
+    g.add(line1);
+
+    const line2 = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.04), new THREE.MeshBasicMaterial({ color: 0xc4612a, transparent: true, opacity: 0.5 }));
+    line2.position.set(0, -1.1, 0.02);
+    g.add(line2);
+
+    // photo area placeholder
+    const photoMat = new THREE.MeshBasicMaterial({ color: 0x0e0b08 });
+    const photo = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.7), photoMat);
+    photo.position.set(0, 0.5, 0.01);
+    g.add(photo);
+
+    // subtle cross lines on photo area
+    const crossMat = new THREE.MeshBasicMaterial({ color: 0x7a3818, transparent: true, opacity: 0.2 });
+    const ch = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 0.01), crossMat);
+    ch.position.set(0, 0.5, 0.02);
+    g.add(ch);
+    const cv = new THREE.Mesh(new THREE.PlaneGeometry(0.01, 1.7), crossMat);
+    cv.position.set(0, 0.5, 0.02);
+    g.add(cv);
+
+    g._targetRotY = 0;
+    g._targetRotX = 0;
+    scene.add(g);
+    cardGroups.push(g);
+  });
+
+  // mouse interaction
+  let mx = 0, my = 0;
+  canvas.addEventListener('mousemove', e => {
+    const r = canvas.getBoundingClientRect();
+    mx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+    my = ((e.clientY - r.top) / r.height - 0.5) * 2;
+
+    // which card is hovered?
+    const normX = (e.clientX - r.left) / r.width; // 0..1
+    cardGroups.forEach((g, i) => {
+      const inZone = normX > i/3 && normX < (i+1)/3;
+      g._targetRotY = inZone ? -mx * 0.35 : 0;
+      g._targetRotX = inZone ? my * 0.2 : 0;
+      g._hovered = inZone;
+    });
+  });
+  canvas.addEventListener('mouseleave', () => {
+    cardGroups.forEach(g => { g._targetRotY = 0; g._targetRotX = 0; g._hovered = false; });
+  });
+
+  const clock = new THREE.Clock();
+  function animate() {
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+
+    cardGroups.forEach((g, i) => {
+      g.rotation.y += (g._targetRotY - g.rotation.y) * 0.08;
+      g.rotation.x += (g._targetRotX - g.rotation.x) * 0.08;
+      // gentle float
+      const targetY = Math.sin(t * 0.5 + i * 1.2) * 0.08 + (g._hovered ? 0.15 : 0);
+      g.position.y += (targetY - g.position.y) * 0.04;
+    });
+
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>essence.crew — mobile + desktop</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #050505; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+
+.page-header {
+  text-align: center; padding: 24px 20px 8px;
+}
+.page-header h1 { font-size: .9rem; color: #aaa; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
+.page-header p { font-size: .72rem; color: #444; margin-top: 4px; }
+
+.layout { display: flex; gap: 32px; padding: 32px 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
+
+/* ═══ SHARED HERO STYLES ═══ */
+.hero-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.device-label { font-size: .62rem; letter-spacing: 3px; color: #444; text-transform: uppercase; font-family: monospace; }
+
+/* photo bg simulation */
+.hero-bg {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(8,6,4,.2) 0%, rgba(8,6,4,0) 25%, rgba(8,6,4,0) 55%, rgba(8,6,4,.92) 100%),
+    linear-gradient(to right, rgba(8,6,4,.65) 0%, rgba(8,6,4,0) 35%, rgba(8,6,4,0) 70%, rgba(8,6,4,.35) 100%),
+    radial-gradient(ellipse 60% 40% at 70% 65%, rgba(180,120,30,.15) 0%, transparent 60%),
+    #18120a;
+}
+.photo-hint {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+}
+.photo-hint span {
+  font-family: monospace; font-size: .58rem; letter-spacing: 2px;
+  color: rgba(255,255,255,.1); border: 1px dashed rgba(255,255,255,.07);
+  padding: 8px 16px; text-transform: uppercase;
+}
+.scanlines {
+  position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(transparent, transparent 3px, rgba(0,0,0,.2) 3px, rgba(0,0,0,.2) 4px);
+  z-index: 2;
+}
+.grain {
+  position: absolute; inset: 0; pointer-events: none; z-index: 3;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+  background-size: cover; mix-blend-mode: overlay;
+}
+.edge {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px; z-index: 5;
+  background: linear-gradient(180deg, transparent, #9b4a1e 15%, #c4612a 50%, #9b4a1e 85%, transparent);
+}
+.bg-ess {
+  position: absolute; left: 0; right: 0; bottom: 15%;
+  font-family: Impact,'Arial Black',sans-serif; font-weight: 900;
+  text-align: center; text-transform: uppercase; letter-spacing: 8px;
+  color: transparent; -webkit-text-stroke: 1px rgba(232,216,152,.1);
+  pointer-events: none; z-index: 1; filter: blur(.3px); line-height: 1;
+}
+.hero-content-wrap {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
+  background: linear-gradient(to top, rgba(8,6,4,.92) 0%, rgba(8,6,4,.5) 55%, transparent 100%);
+}
+
+/* ═══ DESKTOP ═══ */
+.hero-desktop {
+  position: relative; width: 740px; height: 420px; overflow: hidden;
+  border: 1px solid #1a1a1a;
+}
+.hero-desktop .nav {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 32px;
+  background: linear-gradient(to bottom, rgba(8,6,4,.65) 0%, transparent 100%);
+  font-size: .68rem; letter-spacing: 3px; text-transform: uppercase;
+}
+.hero-desktop .nav-logo {
+  font-family: Impact; font-size: 1rem; letter-spacing: 4px;
+  color: #e8d898; -webkit-text-stroke: 1px #8b4020;
+}
+.hero-desktop .nav-links { display: flex; gap: 20px; color: rgba(232,216,152,.45); font-size: .62rem; }
+.hero-desktop .hero-content-wrap { padding: 0 32px 28px; }
+.hero-desktop .eyebrow { font-family: monospace; font-size: .55rem; letter-spacing: 5px; color: rgba(180,110,50,.55); margin-bottom: 8px; text-transform: uppercase; }
+.hero-desktop .title { font-family: Impact,'Arial Black',sans-serif; font-size: 3.6rem; font-weight: 900; text-transform: uppercase; line-height: .88; letter-spacing: 2px; color: #e8d898; -webkit-text-stroke: 1.5px #7a3818; text-shadow: 2px 2px 0 rgba(30,10,0,.7); }
+.hero-desktop .title .crew { display: block; color: rgba(232,216,152,.45); -webkit-text-stroke: 1px #5c2a10; text-shadow: none; }
+.hero-desktop .uline { display: block; width: 60px; height: 1px; margin: 8px 0 12px; background: linear-gradient(90deg, #7a3818, transparent); }
+.hero-desktop .bottom-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.hero-desktop .sub { font-size: .68rem; letter-spacing: 1.5px; color: rgba(200,160,80,.4); text-transform: uppercase; line-height: 1.6; max-width: 220px; }
+.hero-desktop .cta { display: flex; gap: 10px; }
+.hero-desktop .bg-ess { font-size: 7rem; }
+.hero-desktop .stamp { position: absolute; top: 18px; left: 32px; z-index: 10; font-family: monospace; font-size: .48rem; letter-spacing: 3px; color: rgba(140,80,30,.35); border: 1px solid rgba(140,80,30,.15); padding: 2px 7px; text-transform: uppercase; }
+
+/* ═══ MOBILE ═══ */
+.hero-mobile {
+  position: relative; width: 320px; height: 580px; overflow: hidden;
+  border: 1px solid #1a1a1a;
+  /* phone frame feel */
+  border-radius: 24px;
+  box-shadow: 0 0 0 8px #111, 0 0 0 9px #1a1a1a;
+}
+/* notch simulation */
+.hero-mobile::before {
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 80px; height: 22px; background: #0d0d0d; border-radius: 0 0 14px 14px; z-index: 20;
+}
+.hero-mobile .nav {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 28px 20px 12px;
+  background: linear-gradient(to bottom, rgba(8,6,4,.7) 0%, transparent 100%);
+}
+.hero-mobile .nav-logo { font-family: Impact; font-size: .95rem; letter-spacing: 3px; color: #e8d898; -webkit-text-stroke: 1px #8b4020; }
+/* hamburger */
+.hamburger { display: flex; flex-direction: column; gap: 4px; }
+.hamburger span { display: block; width: 20px; height: 1.5px; background: rgba(232,216,152,.5); }
+.hero-mobile .hero-content-wrap { padding: 0 20px 32px; }
+.hero-mobile .eyebrow { font-family: monospace; font-size: .52rem; letter-spacing: 4px; color: rgba(180,110,50,.55); margin-bottom: 10px; text-transform: uppercase; }
+.hero-mobile .title { font-family: Impact,'Arial Black',sans-serif; font-size: 3.2rem; font-weight: 900; text-transform: uppercase; line-height: .88; letter-spacing: 2px; color: #e8d898; -webkit-text-stroke: 1.5px #7a3818; text-shadow: 2px 2px 0 rgba(30,10,0,.7); }
+.hero-mobile .title .crew { display: block; color: rgba(232,216,152,.45); -webkit-text-stroke: 1px #5c2a10; text-shadow: none; }
+.hero-mobile .uline { display: block; width: 50px; height: 1px; margin: 8px 0 14px; background: linear-gradient(90deg, #7a3818, transparent); }
+.hero-mobile .sub { font-size: .65rem; letter-spacing: 1.5px; color: rgba(200,160,80,.4); text-transform: uppercase; line-height: 1.6; margin-bottom: 20px; }
+/* full-width CTA on mobile */
+.hero-mobile .cta { display: flex; flex-direction: column; gap: 8px; }
+.hero-mobile .bg-ess { font-size: 5rem; letter-spacing: 4px; bottom: 20%; }
+
+/* ═══ SHARED BUTTONS ═══ */
+.btn { font-family: -apple-system,sans-serif; font-size: .62rem; letter-spacing: 3px; text-transform: uppercase; padding: 10px 20px; border: none; cursor: pointer; font-weight: 700; background: #7a3818; color: #e8d898; }
+.btn-ghost { background: transparent; border: 1px solid rgba(122,56,24,.35); font-family: -apple-system,sans-serif; font-size: .62rem; letter-spacing: 3px; text-transform: uppercase; padding: 10px 20px; cursor: pointer; color: rgba(200,160,80,.4); }
+.btn-full { width: 100%; text-align: center; }
+
+/* ═══ NOTES ═══ */
+.notes { padding: 28px 40px; display: flex; gap: 20px; flex-wrap: wrap; }
+.note-card { flex: 1; min-width: 200px; background: #0e0b08; border: 1px solid #1a1612; border-radius: 8px; padding: 16px 18px; }
+.note-card h4 { font-size: .68rem; letter-spacing: 2px; color: #c8a060; text-transform: uppercase; margin-bottom: 10px; font-weight: 600; }
+.note-card ul { list-style: none; }
+.note-card ul li { font-size: .72rem; color: #555; padding: 4px 0; }
+.note-card ul li::before { content: '→ '; color: #7a3818; }
+.note-card ul li strong { color: #777; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>essence.crew — desktop + mobile</h1>
+  <p>Mobile-first · mesmo design, layout adaptado</p>
+</div>
+
+<div class="layout">
+
+  <!-- DESKTOP -->
+  <div class="hero-wrap">
+    <div class="device-label">Desktop / Tablet</div>
+    <div class="hero-desktop">
+      <div class="hero-bg"></div>
+      <div class="photo-hint"><span>📸 foto panorâmica grupo + carros</span></div>
+      <div class="bg-ess">ESSENCE</div>
+      <div class="scanlines"></div>
+      <div class="grain"></div>
+      <div class="edge"></div>
+      <div class="stamp">Car Culture · PT</div>
+      <nav class="nav">
+        <div class="nav-logo">ESSENCE.CREW</div>
+        <div class="nav-links"><span>Eventos</span><span>Merch</span><span>Parcerias</span><span>Contacto</span></div>
+      </nav>
+      <div class="hero-content-wrap">
+        <div class="eyebrow">Car culture · Portugal · Est. MMXXIV</div>
+        <div class="title">ESSENCE<span class="crew">CREW</span></div>
+        <span class="uline"></span>
+        <div class="bottom-row">
+          <div class="sub">Eventos de carros modificados.<br>Cultura. Comunidade.</div>
+          <div class="cta">
+            <button class="btn">Ver Eventos</button>
+            <button class="btn-ghost">Merch</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="hero-wrap">
+    <div class="device-label">Mobile (375px)</div>
+    <div class="hero-mobile">
+      <div class="hero-bg"></div>
+      <div class="photo-hint"><span>📸 foto</span></div>
+      <div class="bg-ess">EC</div>
+      <div class="scanlines"></div>
+      <div class="grain"></div>
+      <div class="edge"></div>
+      <nav class="nav">
+        <div class="nav-logo">ESSENCE.CREW</div>
+        <div class="hamburger"><span></span><span></span><span></span></div>
+      </nav>
+      <div class="hero-content-wrap">
+        <div class="eyebrow">Car Culture · PT · MMXXIV</div>
+        <div class="title">ESSENCE<span class="crew">CREW</span></div>
+        <span class="uline"></span>
+        <div class="sub">Eventos · Merch · Comunidade</div>
+        <div class="cta">
+          <button class="btn btn-full">Ver Eventos</button>
+          <button class="btn-ghost btn-full">Explorar Merch</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <div class="note-card">
+    <h4>Mobile-first no código</h4>
+    <ul>
+      <li><strong>Tailwind</strong> — breakpoints sm/md/lg nativos</li>
+      <li><strong>Nav</strong> → hamburger menu em mobile</li>
+      <li><strong>CTAs</strong> → full-width em mobile, side-by-side em desktop</li>
+      <li><strong>Foto</strong> → object-fit: cover, recorta para portrait em mobile</li>
+      <li><strong>Fonte</strong> → clamp() — escala automática entre ecrãs</li>
+    </ul>
+  </div>
+  <div class="note-card">
+    <h4>3D / parallax responsivo</h4>
+    <ul>
+      <li><strong>Parallax ao scroll</strong> → desativado em mobile (performance)</li>
+      <li><strong>Tilt 3D</strong> → só em desktop (gyroscope em mobile em alternativa)</li>
+      <li><strong>Hover effects</strong> → substituídos por touch em mobile</li>
+      <li><strong>Grain + scanlines</strong> → mesmo em todos os ecrãs</li>
+    </ul>
+  </div>
+  <div class="note-card">
+    <h4>Próximos passos</h4>
+    <ul>
+      <li>Confirmar este conceito visual</li>
+      <li>Receber a foto panorâmica do IG</li>
+      <li>Desenhar secções restantes (eventos, merch, parcerias)</li>
+      <li>Escrever o plano de implementação</li>
+    </ul>
+  </div>
+</div>
+
+</body>
+</html>

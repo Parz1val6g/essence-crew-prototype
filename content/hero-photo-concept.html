@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>essence.crew — photo hero concept</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #050505; font-family: Impact, 'Arial Black', sans-serif; }
+
+.page-header {
+  text-align: center; padding: 24px 20px 8px;
+  font-family: -apple-system, sans-serif;
+}
+.page-header h1 { font-size: .9rem; color: #aaa; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
+.page-header p { font-size: .72rem; color: #444; margin-top: 4px; }
+
+/* ═══ HERO WITH PHOTO BG ═══ */
+.hero {
+  position: relative; height: 600px; overflow: hidden;
+}
+
+/* simulated photo background — panoramic cars + crew */
+.photo-bg {
+  position: absolute; inset: 0;
+  /* dark concrete/asphalt + warm tones simulating night car meet */
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(8,6,4,.2) 0%,
+      rgba(8,6,4,.0) 25%,
+      rgba(8,6,4,.0) 60%,
+      rgba(8,6,4,.85) 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(8,6,4,.7) 0%,
+      rgba(8,6,4,.0) 30%,
+      rgba(8,6,4,.0) 70%,
+      rgba(8,6,4,.4) 100%
+    ),
+    /* simulated car headlights/warm glow at night */
+    radial-gradient(ellipse 400px 200px at 70% 70%, rgba(180,120,30,.18) 0%, transparent 60%),
+    radial-gradient(ellipse 200px 150px at 30% 65%, rgba(200,80,20,.1) 0%, transparent 50%),
+    /* base dark warm */
+    #1a1208;
+  filter: saturate(0.7);
+}
+
+/* photo placeholder text — shows where the real photo goes */
+.photo-placeholder {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 0;
+}
+.photo-placeholder-inner {
+  text-align: center;
+  border: 1px dashed rgba(255,255,255,.08);
+  padding: 20px 40px; border-radius: 4px;
+}
+.photo-placeholder-inner span {
+  font-family: monospace; font-size: .62rem; letter-spacing: 3px;
+  color: rgba(255,255,255,.12); text-transform: uppercase; display: block;
+}
+.photo-placeholder-inner span:first-child { font-size: .9rem; color: rgba(255,255,255,.18); margin-bottom: 8px; }
+
+/* BG ESSENCE text — like it's written behind the cars */
+.bg-essence {
+  position: absolute; left: 0; right: 0; bottom: 100px;
+  text-align: center; z-index: 1;
+  font-size: clamp(5rem, 18vw, 11rem); font-weight: 900;
+  text-transform: uppercase; letter-spacing: 12px;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(232,216,152,.12);
+  pointer-events: none; line-height: 1;
+  /* feels like it's part of the scene */
+  filter: blur(.4px);
+}
+
+/* scanlines on top of everything */
+.scanlines {
+  position: absolute; inset: 0; pointer-events: none; z-index: 4;
+  background: repeating-linear-gradient(
+    transparent, transparent 3px,
+    rgba(0,0,0,.18) 3px, rgba(0,0,0,.18) 4px
+  );
+}
+
+/* film grain */
+.grain {
+  position: absolute; inset: 0; pointer-events: none; z-index: 5;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 500 500' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+  background-size: cover; mix-blend-mode: overlay;
+}
+
+/* terracotta left edge */
+.edge {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px; z-index: 10;
+  background: linear-gradient(180deg, transparent, #9b4a1e 15%, #c4612a 50%, #9b4a1e 85%, transparent);
+}
+
+/* NAV */
+.hero-nav {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 60px;
+  /* glassmorphism on top of photo */
+  background: linear-gradient(to bottom, rgba(8,6,4,.6) 0%, transparent 100%);
+  font-family: -apple-system, sans-serif; font-size: .72rem;
+  letter-spacing: 3px; text-transform: uppercase;
+}
+.nav-logo {
+  font-family: Impact; font-size: 1.1rem; letter-spacing: 4px;
+  color: #e8d898; -webkit-text-stroke: 1px #8b4020;
+}
+.nav-links { display: flex; gap: 28px; color: rgba(232,216,152,.5); font-size: .68rem; }
+
+/* MAIN CONTENT — bottom anchored */
+.hero-content {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 20;
+  padding: 0 60px 48px;
+  /* soft vignette from bottom */
+  background: linear-gradient(to top, rgba(8,6,4,.92) 0%, rgba(8,6,4,.6) 50%, transparent 100%);
+}
+
+.hero-eyebrow {
+  font-family: monospace; font-size: .58rem; letter-spacing: 6px;
+  text-transform: uppercase; margin-bottom: 10px;
+  color: rgba(180,110,50,.6);
+}
+
+.hero-title {
+  font-size: clamp(3rem, 7vw, 5rem); font-weight: 900;
+  text-transform: uppercase; line-height: .88; letter-spacing: 3px;
+  color: #e8d898;
+  -webkit-text-stroke: 1.5px #7a3818;
+  text-shadow: 0 0 80px rgba(232,216,152,.15), 3px 3px 0 rgba(30,10,0,.7);
+}
+.hero-title .crew {
+  color: rgba(232,216,152,.5);
+  -webkit-text-stroke: 1px #5c2a10;
+  text-shadow: none;
+}
+
+.title-underline {
+  display: block; width: 70px; height: 1px; margin: 10px 0 16px;
+  background: linear-gradient(90deg, #7a3818, transparent);
+}
+
+.hero-bottom-row {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 20px;
+}
+.hero-sub {
+  font-family: -apple-system, sans-serif; font-size: .78rem;
+  letter-spacing: 2px; text-transform: uppercase;
+  max-width: 300px; line-height: 1.6; color: rgba(200,160,80,.45);
+}
+.hero-cta { display: flex; gap: 12px; align-items: center; flex-shrink: 0; }
+.btn {
+  font-family: -apple-system, sans-serif; font-size: .7rem;
+  letter-spacing: 3px; text-transform: uppercase; padding: 11px 26px;
+  border: none; cursor: pointer; font-weight: 700;
+  background: #7a3818; color: #e8d898;
+}
+.btn-ghost {
+  background: transparent; border: 1px solid rgba(122,56,24,.4);
+  font-family: -apple-system, sans-serif; font-size: .7rem;
+  letter-spacing: 3px; text-transform: uppercase; padding: 11px 26px;
+  cursor: pointer; font-weight: 400; color: rgba(200,160,80,.45);
+}
+
+/* scroll hint */
+.scroll-hint {
+  position: absolute; right: 60px; bottom: 50%; transform: translateY(50%);
+  z-index: 20; font-family: monospace; font-size: .55rem;
+  letter-spacing: 4px; color: rgba(200,160,80,.25); text-transform: uppercase;
+  writing-mode: vertical-rl;
+}
+
+/* stamp */
+.stamp {
+  position: absolute; top: 22px; left: 60px; z-index: 20;
+  font-family: monospace; font-size: .52rem; letter-spacing: 4px;
+  color: rgba(140,80,30,.4); text-transform: uppercase;
+  border: 1px solid rgba(140,80,30,.18); padding: 3px 8px;
+}
+
+/* ─── NOTE BELOW ─── */
+.note {
+  padding: 28px 60px; background: #0a0806;
+  font-family: -apple-system, sans-serif;
+}
+.note h3 { font-size: .78rem; color: #c8a060; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; font-weight: 600; }
+.note ul { list-style: none; }
+.note ul li { font-size: .78rem; color: #555; padding: 5px 0; letter-spacing: 1px; }
+.note ul li::before { content: '→ '; color: #7a3818; }
+.note ul li strong { color: #888; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>essence.crew — hero com foto de fundo</h1>
+  <p>Fundo = foto do grupo panorâmica. Texto sobreposto. Envias a foto e substitui.</p>
+</div>
+
+<div class="hero">
+  <div class="photo-bg"></div>
+
+  <!-- where the real photo goes -->
+  <div class="photo-placeholder">
+    <div class="photo-placeholder-inner">
+      <span>📸 FOTO DO GRUPO</span>
+      <span>Panorâmica com carros + crew</span>
+      <span>+ "ESSENCE" escrito no fundo</span>
+    </div>
+  </div>
+
+  <div class="bg-essence">ESSENCE</div>
+  <div class="scanlines"></div>
+  <div class="grain"></div>
+  <div class="edge"></div>
+
+  <nav class="hero-nav">
+    <div class="nav-logo">ESSENCE.CREW</div>
+    <div class="nav-links">
+      <span>Eventos</span><span>Merch</span><span>Parcerias</span><span>Contacto</span>
+    </div>
+  </nav>
+
+  <div class="stamp">Car Culture · PT</div>
+  <div class="scroll-hint">Scroll ↓</div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">Car culture · Portugal · Est. MMXXIV</div>
+    <div class="hero-title">ESSENCE<span class="crew">CREW</span></div>
+    <span class="title-underline"></span>
+    <div class="hero-bottom-row">
+      <div class="hero-sub">Eventos de carros modificados.<br>Cultura. Comunidade. Velocidade.</div>
+      <div class="hero-cta">
+        <button class="btn">Ver Eventos</button>
+        <button class="btn-ghost">Explorar Merch</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <h3>Como vai funcionar com a foto real</h3>
+  <ul>
+    <li><strong>Foto panorâmica</strong> das 3 fotos do IG exportadas e unidas numa só imagem wide</li>
+    <li><strong>"ESSENCE" no fundo da foto</strong> vai aparecer por baixo do overlay — integrado na cena</li>
+    <li><strong>Parallax ao scroll</strong> — a foto move a velocidade diferente do texto</li>
+    <li><strong>Tilt 3D</strong> ao mover o rato — a foto inclina subtilmente</li>
+    <li>Os <strong>scanlines + grain</strong> ficam por cima de tudo para dar o look retro</li>
+  </ul>
+</div>
+
+</body>
+</html>

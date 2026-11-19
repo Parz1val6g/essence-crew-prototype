@@ -1,0 +1,146 @@
+<style>
+  body { background: #060606; }
+  .cards { display: flex; gap: 1.4rem; flex-wrap: wrap; justify-content: center; margin-top: 1.5rem; }
+  .card {
+    width: 270px; border-radius: 10px; overflow: hidden; cursor: pointer;
+    border: 2px solid #222; transition: all 0.25s; background: #0e0e0e;
+  }
+  .card:hover { transform: translateY(-5px); border-color: #555; }
+  .card.selected { border-color: #fff !important; box-shadow: 0 0 30px rgba(255,255,255,0.1); }
+  .card-preview { height: 210px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+
+  /* 1 — Pure B&W */
+  .preview-1 { background: #080808; }
+  .preview-1 .concrete { position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E") center/cover;opacity:.5;}
+  .preview-1 .slash { position:absolute;top:0;left:40px;width:1px;height:100%;background:rgba(255,255,255,0.05);transform:rotate(15deg);transform-origin:top; }
+  .preview-1 .main-text { font-family:Impact,'Arial Black',sans-serif;font-size:2.4rem;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:6px;z-index:1;text-shadow:0 0 40px rgba(255,255,255,0.15); }
+  .preview-1 .sub-text { position:absolute;bottom:14px;left:0;right:0;text-align:center;font-family:monospace;font-size:.6rem;letter-spacing:6px;color:rgba(255,255,255,0.3);text-transform:uppercase;z-index:1; }
+
+  /* 2 — Blood Red */
+  .preview-2 { background: #080808; }
+  .preview-2 .red-bar { position:absolute;left:0;top:0;bottom:0;width:4px;background:#cc0000; }
+  .preview-2 .grain { position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.01) 2px,rgba(255,255,255,0.01) 4px); }
+  .preview-2 .main-text { font-family:Impact,'Arial Black',sans-serif;font-size:2.2rem;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:4px;z-index:1;text-shadow:3px 0 0 #cc0000; }
+  .preview-2 .sub-text { position:absolute;bottom:14px;left:0;right:0;text-align:center;font-family:monospace;font-size:.6rem;letter-spacing:6px;color:rgba(204,0,0,0.6);text-transform:uppercase;z-index:1; }
+  .preview-2 .cross { position:absolute;top:16px;right:16px;font-size:.7rem;color:#cc0000;font-family:monospace;z-index:1;opacity:.7; }
+
+  /* 3 — Off-white stencil */
+  .preview-3 { background: #111; }
+  .preview-3 .scanlines { position:absolute;inset:0;background:repeating-linear-gradient(transparent,transparent 3px,rgba(0,0,0,0.3) 3px,rgba(0,0,0,0.3) 4px); }
+  .preview-3 .main-text { font-family:Impact,'Arial Black',sans-serif;font-size:2.2rem;font-weight:900;color:#e8e0d0;text-transform:uppercase;letter-spacing:5px;z-index:1; }
+  .preview-3 .underline-bar { position:absolute;bottom:40px;left:50%;transform:translateX(-50%);width:60px;height:2px;background:#e8e0d0;z-index:1;opacity:.5; }
+  .preview-3 .sub-text { position:absolute;bottom:14px;left:0;right:0;text-align:center;font-family:'Courier New',monospace;font-size:.55rem;letter-spacing:5px;color:rgba(232,224,208,0.35);text-transform:uppercase;z-index:1; }
+
+  /* 4 — Breaking Bad Yellow */
+  .preview-4 {
+    background: #0c0b06;
+  }
+  .preview-4 .bb-overlay {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 240px 180px at 50% 50%, rgba(180,140,0,0.12) 0%, transparent 70%),
+      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.25) 3px, rgba(0,0,0,0.25) 4px);
+  }
+  .preview-4 .desert-grain {
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+    background-size: cover;
+  }
+  .preview-4 .yellow-bar {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: linear-gradient(180deg, #b8860b, #e6b800, #b8860b);
+  }
+  .preview-4 .main-text {
+    font-family: Impact, 'Arial Black', sans-serif;
+    font-size: 2.3rem; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 5px; z-index: 1;
+    color: #d4a800;
+    text-shadow:
+      0 0 20px rgba(212,168,0,0.4),
+      2px 2px 0 rgba(0,0,0,0.9);
+    filter: saturate(0.8) contrast(1.1);
+  }
+  .preview-4 .sub-text {
+    position: absolute; bottom: 14px; left: 0; right: 0; text-align: center;
+    font-family: monospace; font-size: .6rem; letter-spacing: 6px;
+    color: rgba(212,168,0,0.4); text-transform: uppercase; z-index: 1;
+  }
+  .preview-4 .bb-tag {
+    position: absolute; top: 14px; right: 14px;
+    font-family: monospace; font-size: .55rem; letter-spacing: 2px;
+    color: rgba(212,168,0,0.35); z-index: 1; text-transform: uppercase;
+  }
+
+  .card-body { padding: 14px 16px 18px; }
+  .card-body h3 { color: #fff; font-size: .95rem; margin: 0 0 5px 0; letter-spacing: 1px; }
+  .card-body p { color: #666; font-size: .8rem; margin: 0; line-height: 1.5; }
+  .ref { margin-top: 9px; color: #444; font-size: .72rem; font-style: italic; }
+  .new-badge { position:absolute;top:10px;left:10px;background:#d4a800;color:#000;font-size:.58rem;font-weight:900;padding:2px 7px;border-radius:4px;letter-spacing:1px;z-index:2; }
+</style>
+
+<h2>Escolhe o acento de cor — vibe gritty raw rap</h2>
+<p class="subtitle">Preto base nos 4. Diz qual encaixa mais na essence.crew.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="bw" onclick="toggleSelect(this)">
+    <div class="card-preview preview-1">
+      <div class="concrete"></div>
+      <div class="slash"></div>
+      <div class="main-text">ESSENCE</div>
+      <div class="sub-text">CREW · EST · MMXXIV</div>
+    </div>
+    <div class="card-body">
+      <h3>Preto puro</h3>
+      <p>Sem cor. Concreto, cru. The Marshall Mathers LP energy.</p>
+      <div class="ref">→ Eminem · Biggie · Wu-Tang</div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="red" onclick="toggleSelect(this)">
+    <div class="card-preview preview-2">
+      <div class="grain"></div>
+      <div class="red-bar"></div>
+      <div class="cross">✕</div>
+      <div class="main-text">ESSENCE</div>
+      <div class="sub-text">CREW · EST · MMXXIV</div>
+    </div>
+    <div class="card-body">
+      <h3>Preto + Vermelho</h3>
+      <p>Acento agressivo. Get Rich or Die Tryin' energy.</p>
+      <div class="ref">→ 50 Cent · DMX · NWA</div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="offwhite" onclick="toggleSelect(this)">
+    <div class="card-preview preview-3">
+      <div class="scanlines"></div>
+      <div class="main-text">ESSENCE</div>
+      <div class="underline-bar"></div>
+      <div class="sub-text">CREW · EST · MMXXIV</div>
+    </div>
+    <div class="card-body">
+      <h3>Preto + Off-white</h3>
+      <p>Stencil desgastado, underground. Doggystyle energy.</p>
+      <div class="ref">→ Snoop · Nas · Jay-Z</div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="yellow" onclick="toggleSelect(this)">
+    <div class="new-badge">NOVO</div>
+    <div class="card-preview preview-4">
+      <div class="desert-grain"></div>
+      <div class="bb-overlay"></div>
+      <div class="yellow-bar"></div>
+      <div class="bb-tag">NEW MEXICO</div>
+      <div class="main-text">ESSENCE</div>
+      <div class="sub-text">CREW · EST · MMXXIV</div>
+    </div>
+    <div class="card-body">
+      <h3>Preto + Âmbar / BB Yellow</h3>
+      <p>Filtro deserto, amarelo queimado, grain cinematográfico. Escuro mas quente.</p>
+      <div class="ref">→ Breaking Bad · Midwest rap · Grimy</div>
+    </div>
+  </div>
+
+</div>

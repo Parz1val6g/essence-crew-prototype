@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>essence.crew — hero mockups</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #050505; font-family: Impact, 'Arial Black', sans-serif; color: #fff; }
+
+/* ── LAYOUT ── */
+.page-header {
+  text-align: center; padding: 28px 20px 10px;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.page-header h1 { font-size: 1rem; color: #aaa; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
+.page-header p { font-size: .78rem; color: #555; margin-top: 4px; }
+
+.versions { display: flex; flex-direction: column; gap: 0; }
+
+/* ── SHARED HERO STRUCTURE ── */
+.hero {
+  position: relative; height: 520px; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 0 60px;
+  cursor: pointer; border: 3px solid transparent; transition: border-color .2s;
+}
+.hero.selected { border-color: rgba(255,255,255,0.5); }
+.hero-label {
+  position: absolute; top: 20px; right: 24px;
+  font-family: monospace; font-size: .62rem; letter-spacing: 3px;
+  text-transform: uppercase; opacity: .5;
+}
+.hero-nav {
+  position: absolute; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 60px;
+  border-bottom: 1px solid;
+  font-family: -apple-system, sans-serif; font-size: .72rem; letter-spacing: 3px;
+  text-transform: uppercase; z-index: 2;
+}
+.nav-logo { font-family: Impact; font-size: 1.1rem; letter-spacing: 4px; }
+.nav-links { display: flex; gap: 28px; opacity: .6; }
+.hero-eyebrow {
+  font-family: monospace; font-size: .62rem; letter-spacing: 6px;
+  text-transform: uppercase; margin-bottom: 16px; opacity: .55;
+}
+.hero-title {
+  font-size: clamp(3.5rem, 8vw, 5.5rem); font-weight: 900;
+  text-transform: uppercase; line-height: .9; letter-spacing: 2px;
+  position: relative; z-index: 1;
+}
+.hero-title .crew { display: block; }
+.hero-sub {
+  margin-top: 20px; font-family: -apple-system, sans-serif;
+  font-size: .82rem; letter-spacing: 2px; opacity: .55;
+  text-transform: uppercase; max-width: 320px; line-height: 1.6;
+}
+.hero-cta {
+  margin-top: 32px; display: flex; gap: 14px; align-items: center;
+}
+.btn {
+  font-family: -apple-system, sans-serif; font-size: .72rem;
+  letter-spacing: 3px; text-transform: uppercase; padding: 11px 26px;
+  border: none; cursor: pointer; font-weight: 700;
+}
+.btn-ghost {
+  background: transparent; border: 1px solid;
+  font-family: -apple-system, sans-serif; font-size: .72rem;
+  letter-spacing: 3px; text-transform: uppercase; padding: 11px 26px;
+  cursor: pointer; font-weight: 400;
+}
+.hero-bg-text {
+  position: absolute; right: -20px; top: 50%; transform: translateY(-50%);
+  font-size: 14rem; font-weight: 900; text-transform: uppercase;
+  letter-spacing: -8px; line-height: 1; pointer-events: none; opacity: .04;
+  z-index: 0;
+}
+.hero-scroll-hint {
+  position: absolute; bottom: 24px; left: 60px;
+  font-family: monospace; font-size: .58rem; letter-spacing: 4px;
+  opacity: .3; text-transform: uppercase;
+}
+.version-tag {
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  writing-mode: vertical-rl; text-orientation: mixed;
+  font-family: monospace; font-size: .58rem; letter-spacing: 4px;
+  opacity: .2; padding-left: 16px;
+}
+
+/* ════════════════════════════════
+   VERSION A — PRETO + VERMELHO
+   ════════════════════════════════ */
+.hero-red {
+  background: #080808;
+}
+.hero-red .hero-nav {
+  border-bottom-color: rgba(180,0,0,0.3);
+  color: #fff;
+}
+.hero-red .nav-logo { color: #cc0000; }
+.hero-red .hero-eyebrow { color: #cc0000; }
+.hero-red .hero-title { color: #fff; text-shadow: 4px 0 0 #cc0000, -1px 0 0 #cc0000; }
+.hero-red .hero-title .crew { color: #cc0000; text-shadow: none; }
+.hero-red .hero-sub { color: #fff; }
+.hero-red .btn { background: #cc0000; color: #fff; }
+.hero-red .btn-ghost { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.5); }
+.hero-red .hero-bg-text { color: #cc0000; }
+.hero-red .hero-scroll-hint { color: #fff; }
+.hero-red .version-tag { color: #fff; }
+.hero-red .hero-label { color: #cc0000; }
+/* grain overlay */
+.hero-red::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 4px);
+}
+/* left red bar */
+.hero-red::after {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: linear-gradient(180deg, transparent, #cc0000 20%, #cc0000 80%, transparent);
+}
+
+/* ════════════════════════════════
+   VERSION B — PRETO + OFF-WHITE
+   ════════════════════════════════ */
+.hero-white {
+  background: #0d0d0d;
+}
+.hero-white .hero-nav {
+  border-bottom-color: rgba(220,210,195,0.12);
+  color: #d8d0c0;
+}
+.hero-white .nav-logo { color: #d8d0c0; }
+.hero-white .hero-eyebrow { color: rgba(216,208,192,0.6); }
+.hero-white .hero-title { color: #d8d0c0; }
+.hero-white .hero-title .crew { color: rgba(216,208,192,0.45); }
+.hero-white .hero-sub { color: #d8d0c0; }
+.hero-white .btn { background: #d8d0c0; color: #0d0d0d; }
+.hero-white .btn-ghost { border-color: rgba(216,208,192,0.25); color: rgba(216,208,192,0.45); }
+.hero-white .hero-bg-text { color: #d8d0c0; }
+.hero-white .hero-scroll-hint { color: #d8d0c0; }
+.hero-white .version-tag { color: #d8d0c0; }
+.hero-white .hero-label { color: rgba(216,208,192,0.5); }
+/* scanlines */
+.hero-white::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(transparent, transparent 3px, rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px);
+}
+/* stencil glow */
+.hero-white::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 400px 300px at 30% 55%, rgba(216,208,192,0.04) 0%, transparent 70%);
+}
+/* underline on title */
+.hero-white .title-underline {
+  display: block; width: 80px; height: 1px;
+  background: rgba(216,208,192,0.4); margin-top: 10px;
+}
+
+/* ════════════════════════════════
+   VERSION C — PRETO + ÂMBAR BB
+   ════════════════════════════════ */
+.hero-amber {
+  background: #0a0900;
+}
+.hero-amber .hero-nav {
+  border-bottom-color: rgba(180,130,0,0.2);
+  color: #c8a040;
+}
+.hero-amber .nav-logo { color: #c8a040; }
+.hero-amber .hero-eyebrow { color: rgba(200,160,64,0.6); }
+.hero-amber .hero-title { color: #d4aa48; text-shadow: 0 0 60px rgba(212,170,72,0.25); }
+.hero-amber .hero-title .crew { color: rgba(212,170,72,0.5); }
+.hero-amber .hero-sub { color: #c8a040; }
+.hero-amber .btn { background: #c8a040; color: #0a0900; }
+.hero-amber .btn-ghost { border-color: rgba(200,160,64,0.25); color: rgba(200,160,64,0.45); }
+.hero-amber .hero-bg-text { color: #c8a040; }
+.hero-amber .hero-scroll-hint { color: #c8a040; }
+.hero-amber .version-tag { color: #c8a040; }
+.hero-amber .hero-label { color: rgba(200,160,64,0.5); }
+/* desert grain + warm overlay */
+.hero-amber::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 300px 200px at 60% 40%, rgba(160,100,0,0.08) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.2) 3px, rgba(0,0,0,0.2) 4px);
+}
+.hero-amber::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E") center/cover;
+  mix-blend-mode: overlay;
+}
+
+/* ── DIVIDER ── */
+.divider {
+  height: 1px; background: #1a1a1a; margin: 0;
+}
+
+/* ── SELECTION INDICATOR ── */
+.pick-label {
+  position: absolute; bottom: 24px; right: 24px;
+  font-family: -apple-system, sans-serif; font-size: .68rem;
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 6px 14px; border-radius: 4px;
+  opacity: 0; transition: opacity .2s;
+}
+.hero:hover .pick-label { opacity: 1; }
+.hero-red .pick-label { background: rgba(204,0,0,0.2); color: #cc0000; border: 1px solid rgba(204,0,0,0.3); }
+.hero-white .pick-label { background: rgba(216,208,192,0.1); color: #d8d0c0; border: 1px solid rgba(216,208,192,0.2); }
+.hero-amber .pick-label { background: rgba(200,160,64,0.1); color: #c8a040; border: 1px solid rgba(200,160,64,0.25); }
+
+/* ── FOOTER PROMPT ── */
+.footer-prompt {
+  text-align: center; padding: 28px;
+  font-family: -apple-system, sans-serif; font-size: .75rem;
+  color: #444; letter-spacing: 2px; text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>essence.crew — hero section</h1>
+  <p>3 color directions · full mockup · clica para selecionar</p>
+</div>
+
+<!-- ══ VERSION A: RED ══ -->
+<div class="versions">
+<div class="hero hero-red" data-choice="red" onclick="this.classList.toggle('selected')">
+  <div class="hero-label">VERSION A · RED</div>
+  <div class="version-tag">ESSENCE · CREW</div>
+  <nav class="hero-nav">
+    <div class="nav-logo">ESSENCE.CREW</div>
+    <div class="nav-links">
+      <span>Eventos</span>
+      <span>Merch</span>
+      <span>Parcerias</span>
+      <span>Contacto</span>
+    </div>
+  </nav>
+  <div style="margin-top: 60px; position: relative; z-index: 1;">
+    <div class="hero-eyebrow">Car culture · Portugal · Est. MMXXIV</div>
+    <div class="hero-title">
+      ESSENCE<span class="crew">CREW</span>
+    </div>
+    <div class="hero-sub">Eventos de carros modificados.<br>Cultura. Comunidade. Velocidade.</div>
+    <div class="hero-cta">
+      <button class="btn">Ver Eventos</button>
+      <button class="btn-ghost">Explorar Merch</button>
+    </div>
+  </div>
+  <div class="hero-bg-text">EC</div>
+  <div class="hero-scroll-hint">↓ Scroll para explorar</div>
+  <div class="pick-label">Selecionar</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══ VERSION B: OFF-WHITE ══ -->
+<div class="hero hero-white" data-choice="offwhite" onclick="this.classList.toggle('selected')">
+  <div class="hero-label">VERSION B · OFF-WHITE</div>
+  <div class="version-tag">ESSENCE · CREW</div>
+  <nav class="hero-nav">
+    <div class="nav-logo">ESSENCE.CREW</div>
+    <div class="nav-links">
+      <span>Eventos</span>
+      <span>Merch</span>
+      <span>Parcerias</span>
+      <span>Contacto</span>
+    </div>
+  </nav>
+  <div style="margin-top: 60px; position: relative; z-index: 1;">
+    <div class="hero-eyebrow">Car culture · Portugal · Est. MMXXIV</div>
+    <div class="hero-title">
+      ESSENCE<span class="crew">CREW</span>
+    </div>
+    <span class="title-underline"></span>
+    <div class="hero-sub">Eventos de carros modificados.<br>Cultura. Comunidade. Velocidade.</div>
+    <div class="hero-cta">
+      <button class="btn">Ver Eventos</button>
+      <button class="btn-ghost">Explorar Merch</button>
+    </div>
+  </div>
+  <div class="hero-bg-text">EC</div>
+  <div class="hero-scroll-hint">↓ Scroll para explorar</div>
+  <div class="pick-label">Selecionar</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══ VERSION C: AMBER ══ -->
+<div class="hero hero-amber" data-choice="amber" onclick="this.classList.toggle('selected')">
+  <div class="hero-label">VERSION C · AMBER BB</div>
+  <div class="version-tag">ESSENCE · CREW</div>
+  <nav class="hero-nav">
+    <div class="nav-logo">ESSENCE.CREW</div>
+    <div class="nav-links">
+      <span>Eventos</span>
+      <span>Merch</span>
+      <span>Parcerias</span>
+      <span>Contacto</span>
+    </div>
+  </nav>
+  <div style="margin-top: 60px; position: relative; z-index: 1;">
+    <div class="hero-eyebrow">Car culture · Portugal · Est. MMXXIV</div>
+    <div class="hero-title">
+      ESSENCE<span class="crew">CREW</span>
+    </div>
+    <div class="hero-sub">Eventos de carros modificados.<br>Cultura. Comunidade. Velocidade.</div>
+    <div class="hero-cta">
+      <button class="btn">Ver Eventos</button>
+      <button class="btn-ghost">Explorar Merch</button>
+    </div>
+  </div>
+  <div class="hero-bg-text">EC</div>
+  <div class="hero-scroll-hint">↓ Scroll para explorar</div>
+  <div class="pick-label">Selecionar</div>
+</div>
+</div>
+
+<div class="footer-prompt">Clica em cada versão para selecionar · diz qual avança</div>
+
+<script>
+// inject helper
+const s = document.createElement('script');
+s.src = '/helper.js';
+document.head.appendChild(s);
+
+document.querySelectorAll('.hero').forEach(hero => {
+  hero.addEventListener('click', () => {
+    const choice = hero.dataset.choice;
+    const label = hero.querySelector('.hero-label').textContent;
+    if (window.__brainstormSelect) window.__brainstormSelect(choice, label);
+  });
+});
+</script>
+</body>
+</html>

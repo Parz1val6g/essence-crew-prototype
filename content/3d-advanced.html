@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>essence.crew — 3D advanced</title>
+<style>
+:root { --y:#e8d898; --terra:#7a3818; --terra2:#c4612a; --bg:#080604; }
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);overflow-x:hidden;font-family:Impact,'Arial Black',sans-serif;color:var(--y);}
+
+/* ── GLOBAL GRAIN ── */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 500 500' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  background-size:cover;mix-blend-mode:overlay;}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 60px;
+  background:linear-gradient(to bottom,rgba(8,6,4,.85),transparent);
+  border-bottom:1px solid rgba(122,56,24,.15);}
+.nav-logo{font-size:1.1rem;letter-spacing:4px;text-transform:uppercase;
+  color:var(--y);-webkit-text-stroke:1px var(--terra);}
+.nav-links{display:flex;gap:28px;font-size:.7rem;letter-spacing:3px;text-transform:uppercase;color:rgba(200,160,80,.4);}
+
+/* ── HERO ── */
+.hero{position:relative;height:100vh;min-height:650px;overflow:hidden;}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;}
+.hero-ui{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:0 60px 60px;pointer-events:none;}
+.hero-ui *{pointer-events:auto;}
+.scanlines{position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:repeating-linear-gradient(transparent,transparent 3px,rgba(0,0,0,.18) 3px,rgba(0,0,0,.18) 4px);}
+.edge{position:absolute;left:0;top:0;bottom:0;width:3px;z-index:3;
+  background:linear-gradient(180deg,transparent,#9b4a1e 15%,#c4612a 50%,#9b4a1e 85%,transparent);}
+.hero-eyebrow{font-family:monospace;font-size:.58rem;letter-spacing:6px;text-transform:uppercase;color:rgba(180,110,50,.55);margin-bottom:12px;position:relative;z-index:5;}
+.hero-title{font-size:clamp(3.5rem,8vw,6.5rem);font-weight:900;text-transform:uppercase;line-height:.85;letter-spacing:3px;
+  color:var(--y);-webkit-text-stroke:2px var(--terra);
+  text-shadow:0 0 60px rgba(232,216,152,.08),4px 4px 0 rgba(10,5,0,.9);position:relative;z-index:5;}
+.hero-title .crew{display:block;color:rgba(232,216,152,.4);-webkit-text-stroke:1.5px #5c2a10;text-shadow:none;}
+.uline{display:block;width:70px;height:1px;margin:12px 0 20px;background:linear-gradient(90deg,var(--terra),transparent);position:relative;z-index:5;}
+.hero-row{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;position:relative;z-index:5;}
+.hero-sub{font-size:.8rem;letter-spacing:2px;text-transform:uppercase;color:rgba(200,160,80,.38);max-width:260px;line-height:1.65;}
+.cta{display:flex;gap:12px;}
+.btn{font-size:.7rem;letter-spacing:3px;text-transform:uppercase;padding:11px 26px;border:none;cursor:pointer;font-weight:700;background:var(--terra);color:var(--y);}
+.btn-g{background:transparent;border:1px solid rgba(122,56,24,.35);font-size:.7rem;letter-spacing:3px;text-transform:uppercase;padding:11px 26px;cursor:pointer;color:rgba(200,160,80,.38);}
+.hint-3d{position:absolute;top:88px;right:50px;z-index:5;font-family:monospace;font-size:.5rem;letter-spacing:3px;color:rgba(200,160,80,.2);text-transform:uppercase;text-align:right;line-height:1.8;}
+
+/* ── MEMBERS SECTION ── */
+.members-section{position:relative;overflow:hidden;background:#0a0804;}
+#members-canvas{width:100%;height:600px;display:block;}
+.members-overlay{position:absolute;top:60px;left:60px;z-index:5;pointer-events:none;}
+.sec-label{font-family:monospace;font-size:.55rem;letter-spacing:5px;text-transform:uppercase;color:rgba(180,110,50,.45);margin-bottom:12px;}
+.sec-title{font-size:clamp(2rem,5vw,3rem);font-weight:900;text-transform:uppercase;letter-spacing:2px;
+  color:var(--y);-webkit-text-stroke:1.5px var(--terra);text-shadow:2px 2px 0 rgba(10,5,0,.8);line-height:.9;}
+.sec-div{width:70px;height:1px;background:linear-gradient(90deg,var(--terra),transparent);margin-top:12px;}
+.members-hint{position:absolute;bottom:20px;left:0;right:0;text-align:center;font-family:monospace;font-size:.5rem;letter-spacing:3px;color:rgba(200,160,80,.2);text-transform:uppercase;z-index:5;}
+
+/* ── NOTE ── */
+.note-bar{padding:28px 60px;background:#06040200;border-top:1px solid rgba(122,56,24,.12);display:flex;gap:16px;flex-wrap:wrap;}
+.note-pill{background:rgba(122,56,24,.08);border:1px solid rgba(122,56,24,.15);border-radius:3px;padding:8px 14px;font-family:monospace;font-size:.55rem;letter-spacing:2px;text-transform:uppercase;color:rgba(200,160,80,.4);}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">ESSENCE.CREW</div>
+  <div class="nav-links"><span>Eventos</span><span>Merch</span><span>Parcerias</span><span>Contacto</span></div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="scanlines"></div>
+  <div class="edge"></div>
+  <div class="hint-3d">move o rato →<br>scroll ↓<br>3D ao vivo</div>
+  <div class="hero-ui">
+    <div class="hero-eyebrow">Car culture · Portugal · Est. MMXXIV</div>
+    <h1 class="hero-title">ESSENCE<span class="crew">CREW</span></h1>
+    <span class="uline"></span>
+    <div class="hero-row">
+      <p class="hero-sub">Eventos de carros modificados.<br>Cultura. Comunidade. Velocidade.</p>
+      <div class="cta">
+        <button class="btn">Ver Eventos</button>
+        <button class="btn-g">Explorar Merch</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MEMBERS -->
+<section class="members-section">
+  <div class="members-overlay">
+    <div class="sec-label">— Quem Somos</div>
+    <div class="sec-title">THE CREW</div>
+    <div class="sec-div"></div>
+  </div>
+  <canvas id="members-canvas"></canvas>
+  <div class="members-hint">hover sobre cada membro · clica para ver o carro</div>
+</section>
+
+<div class="note-bar">
+  <div class="note-pill">✦ Retro 80s grid road</div>
+  <div class="note-pill">✦ Turbo 3D wireframe</div>
+  <div class="note-pill">✦ Faísca particles</div>
+  <div class="note-pill">✦ Engine pistons</div>
+  <div class="note-pill">✦ Spinning rims</div>
+  <div class="note-pill">✦ Member 3D cards hover</div>
+  <div class="note-pill">✦ Tilt mouse parallax</div>
+</div>
+
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+
+const Y    = 0xe8d898;
+const TERR = 0x7a3818;
+const TERR2= 0xc4612a;
+const BG   = 0x080604;
+
+/* ═══════════════════════════════════════════
+   HERO SCENE
+   - Retro 80s perspective grid (road)
+   - Turbo / engine wireframe centerpiece
+   - Exhaust spark particles
+   - Piston animation
+═══════════════════════════════════════════ */
+(function heroScene(){
+  const canvas = document.getElementById('hero-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setClearColor(BG,1);
+  renderer.shadowMap.enabled = true;
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(BG, 0.06);
+
+  const camera = new THREE.PerspectiveCamera(55,2,0.1,200);
+  camera.position.set(0,2.5,8);
+  camera.lookAt(0,0,0);
+
+  function resize(){
+    const w=canvas.parentElement.clientWidth, h=canvas.parentElement.clientHeight;
+    renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix();
+  }
+  resize(); window.addEventListener('resize',resize);
+
+  /* ── RETRO 80s GRID ROAD ── */
+  // horizontal lines (vanishing)
+  const gridGroup = new THREE.Group();
+  const hLineMat = new THREE.LineBasicMaterial({color:TERR,transparent:true,opacity:.35});
+  const vLineMat = new THREE.LineBasicMaterial({color:TERR2,transparent:true,opacity:.18});
+
+  // perspective lines going to vanishing point
+  const VP = new THREE.Vector3(0,0,-60);
+  const spread = 20;
+  const rows = 30;
+  for(let i=0;i<rows;i++){
+    const z = -i*4;
+    const w = spread * (1 + i*0.08);
+    const geo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-w,-3.5,z), new THREE.Vector3(w,-3.5,z)
+    ]);
+    const opacity = Math.max(0.05, 0.4 - i*0.012);
+    const mat = new THREE.LineBasicMaterial({color:i===0?TERR2:TERR,transparent:true,opacity});
+    gridGroup.add(new THREE.Line(geo,mat));
+  }
+  // vertical lines (road lanes)
+  for(let j=-5;j<=5;j++){
+    const pts=[];
+    for(let i=0;i<=rows;i++){
+      const z = -i*4;
+      const w = spread*(1+i*0.08);
+      const x = (j/5)*w;
+      pts.push(new THREE.Vector3(x,-3.5,z));
+    }
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    const opacity = j===0 ? 0.3 : 0.1;
+    const mat = new THREE.LineBasicMaterial({color:j===0?TERR2:TERR,transparent:true,opacity});
+    gridGroup.add(new THREE.Line(geo,mat));
+  }
+  scene.add(gridGroup);
+
+  /* ── TURBO / ENGINE CENTERPIECE ── */
+  const mechGroup = new THREE.Group();
+  mechGroup.position.set(2.5, 0.2, 0);
+
+  // main housing (torus)
+  const houseMat = new THREE.MeshBasicMaterial({color:TERR,wireframe:true,transparent:true,opacity:.55});
+  const house = new THREE.Mesh(new THREE.TorusGeometry(1.1,.22,12,32),houseMat);
+  mechGroup.add(house);
+
+  // inner turbine
+  const turbineGroup = new THREE.Group();
+  const bladeMat = new THREE.MeshBasicMaterial({color:Y,transparent:true,opacity:.7});
+  for(let b=0;b<8;b++){
+    const blade = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.04,0.01,0.75,4),
+      bladeMat
+    );
+    const a = (b/8)*Math.PI*2;
+    blade.position.set(Math.cos(a)*.45, Math.sin(a)*.45, 0);
+    blade.rotation.z = a + Math.PI/2;
+    turbineGroup.add(blade);
+  }
+  // hub
+  const hubMat = new THREE.MeshBasicMaterial({color:TERR2,transparent:true,opacity:.8});
+  turbineGroup.add(new THREE.Mesh(new THREE.CylinderGeometry(.1,.1,.08,12), hubMat));
+  turbineGroup.children[turbineGroup.children.length-1].rotation.x = Math.PI/2;
+  mechGroup.add(turbineGroup);
+
+  // intake pipe
+  const pipeMat = new THREE.MeshBasicMaterial({color:TERR,wireframe:true,transparent:true,opacity:.4});
+  const intake = new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,1.4,10),pipeMat);
+  intake.rotation.z = Math.PI/2;
+  intake.position.set(-1.5,0,0);
+  mechGroup.add(intake);
+
+  // exhaust pipe (angled up)
+  const exhaust = new THREE.Mesh(new THREE.CylinderGeometry(.15,.1,1.6,10),pipeMat);
+  exhaust.rotation.z = -Math.PI/4;
+  exhaust.position.set(1.0,.8,0);
+  mechGroup.add(exhaust);
+
+  // 4 bolts around housing
+  const boltMat = new THREE.MeshBasicMaterial({color:Y,transparent:true,opacity:.5});
+  for(let i=0;i<4;i++){
+    const ang = (i/4)*Math.PI*2 + Math.PI/4;
+    const bolt = new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,.12,8),boltMat);
+    bolt.position.set(Math.cos(ang)*1.35, Math.sin(ang)*1.35, 0);
+    bolt.rotation.x = Math.PI/2;
+    mechGroup.add(bolt);
+  }
+
+  // outer ring (wireframe circle)
+  const ringMat = new THREE.MeshBasicMaterial({color:Y,wireframe:true,transparent:true,opacity:.2});
+  mechGroup.add(new THREE.Mesh(new THREE.TorusGeometry(1.5,.03,6,48),ringMat));
+
+  scene.add(mechGroup);
+
+  /* ── PISTONS (left side) ── */
+  const pistonGroup = new THREE.Group();
+  pistonGroup.position.set(-3.5, 0, 0);
+  const pistonMat = new THREE.MeshBasicMaterial({color:TERR,wireframe:true,transparent:true,opacity:.5});
+  const rodMat   = new THREE.MeshBasicMaterial({color:Y,transparent:true,opacity:.4});
+
+  const pistons = [];
+  for(let p=0;p<4;p++){
+    const pg = new THREE.Group();
+    pg.position.x = p*0.9 - 1.35;
+    // cylinder block
+    const cyl = new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,.7,10),pistonMat);
+    cyl.position.y = 0;
+    pg.add(cyl);
+    // piston head
+    const head = new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.18,10),
+      new THREE.MeshBasicMaterial({color:TERR2,transparent:true,opacity:.7}));
+    head.position.y = 0.44;
+    pg.add(head);
+    // connecting rod
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,.7,6),rodMat);
+    rod.position.y = 0.9;
+    pg.add(rod);
+    pistonGroup.add(pg);
+    pistons.push({group:pg, offset: p * Math.PI/2});
+  }
+  // crankshaft
+  pistonGroup.add(new THREE.Mesh(
+    new THREE.CylinderGeometry(.06,.06,3.5,12),
+    new THREE.MeshBasicMaterial({color:Y,wireframe:true,transparent:true,opacity:.3})
+  ));
+  scene.add(pistonGroup);
+
+  /* ── SPARK PARTICLES (exhaust) ── */
+  const sparkCount = 300;
+  const sparkGeo = new THREE.BufferGeometry();
+  const sp = new Float32Array(sparkCount*3);
+  const sv = new Float32Array(sparkCount*3); // velocities
+  const sl = new Float32Array(sparkCount);   // life
+  for(let i=0;i<sparkCount;i++){
+    sp[i*3]  = 3.6 + (Math.random()-.5)*.4; // near exhaust tip
+    sp[i*3+1]= 1.6 + Math.random()*.3;
+    sp[i*3+2]= (Math.random()-.5)*.5;
+    sv[i*3]  = (Math.random()-.5)*.02;
+    sv[i*3+1]= Math.random()*.04+.01;
+    sv[i*3+2]= (Math.random()-.5)*.02;
+    sl[i] = Math.random();
+  }
+  sparkGeo.setAttribute('position',new THREE.BufferAttribute(sp,3));
+  const sparkMat = new THREE.PointsMaterial({color:TERR2,size:.06,transparent:true,opacity:.8});
+  const sparks = new THREE.Points(sparkGeo,sparkMat);
+  sparks.position.copy(mechGroup.position);
+  scene.add(sparks);
+
+  /* ── FLOATING MECHANICAL DEBRIS ── */
+  const debrisMat = new THREE.MeshBasicMaterial({color:TERR,wireframe:true,transparent:true,opacity:.25});
+  const debris = [];
+  const shapes = [
+    ()=>new THREE.BoxGeometry(.15,.15,.15),
+    ()=>new THREE.OctahedronGeometry(.12),
+    ()=>new THREE.TetrahedronGeometry(.12),
+  ];
+  for(let d=0;d<14;d++){
+    const geo = shapes[d%3]();
+    const m = new THREE.Mesh(geo,debrisMat);
+    m.position.set((Math.random()-0.5)*14, (Math.random()-0.5)*5, (Math.random()-0.5)*6-2);
+    m._rx = (Math.random()-.5)*.012;
+    m._ry = (Math.random()-.5)*.012;
+    m._fy = Math.random()*Math.PI*2;
+    scene.add(m); debris.push(m);
+  }
+
+  /* ── MOUSE ── */
+  let mx=0,my=0;
+  document.addEventListener('mousemove',e=>{
+    mx=(e.clientX/innerWidth-.5)*2;
+    my=(e.clientY/innerHeight-.5)*2;
+  });
+  let scrollY=0;
+  window.addEventListener('scroll',()=>{scrollY=window.scrollY;},{passive:true});
+
+  /* ── ANIMATE ── */
+  const clock = new THREE.Clock();
+  function animate(){
+    requestAnimationFrame(animate);
+    const t=clock.getElapsedTime();
+
+    // scroll grid
+    gridGroup.position.z = (t*2) % 4;
+
+    // turbo spin
+    turbineGroup.rotation.z -= 0.06;
+    mechGroup.rotation.y += (mx*.3 - mechGroup.rotation.y)*.04;
+    mechGroup.rotation.x += (-my*.15 - mechGroup.rotation.x)*.04;
+    mechGroup.position.y = Math.sin(t*.4)*.12;
+
+    // pistons
+    pistons.forEach(({group,offset})=>{
+      group.position.y = Math.sin(t*4+offset)*.25;
+    });
+    pistonGroup.rotation.y += ((-mx*.2) - pistonGroup.rotation.y)*.04;
+
+    // sparks
+    const pos = sparkGeo.attributes.position.array;
+    for(let i=0;i<sparkCount;i++){
+      sl[i]-=.012;
+      if(sl[i]<=0){
+        pos[i*3]  = 3.6+(Math.random()-.5)*.4;
+        pos[i*3+1]= 1.6+Math.random()*.3;
+        pos[i*3+2]= (Math.random()-.5)*.5;
+        sl[i]=Math.random();
+      } else {
+        pos[i*3]  += sv[i*3]  + Math.sin(t+i)*.002;
+        pos[i*3+1]+= sv[i*3+1];
+        pos[i*3+2]+= sv[i*3+2];
+      }
+    }
+    sparkGeo.attributes.position.needsUpdate=true;
+    sparkMat.opacity = .5+Math.sin(t*8)*.2;
+
+    // debris float
+    debris.forEach((d,i)=>{
+      d.rotation.x+=d._rx; d.rotation.y+=d._ry;
+      d.position.y+=Math.sin(t*.6+d._fy)*.003;
+    });
+
+    // camera tilt
+    camera.position.x += (mx*.6 - camera.position.x)*.03;
+    camera.position.y += (2.5-my*.4 - camera.position.y)*.03;
+    camera.lookAt(0,0,0);
+
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
+
+/* ═══════════════════════════════════════════
+   MEMBERS SCENE
+   - Spinning rims with photo textures
+   - 3D name tags that float
+   - Neon outlines
+═══════════════════════════════════════════ */
+(function membersScene(){
+  const canvas = document.getElementById('members-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setClearColor(0x0a0804,1);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50,2,0.1,100);
+  camera.position.set(0,0,10);
+
+  function resize(){
+    const w=canvas.clientWidth,h=canvas.clientHeight;
+    renderer.setSize(w,h,false);
+    camera.aspect=w/h; camera.updateProjectionMatrix();
+  }
+  resize(); window.addEventListener('resize',resize);
+
+  // ambient + point lights
+  scene.add(new THREE.AmbientLight(0x332211,.8));
+  const ptL = new THREE.PointLight(TERR2,2,20);
+  ptL.position.set(0,3,5);
+  scene.add(ptL);
+
+  /* ── 3 SPINNING RIMS ── */
+  const memberData = [
+    {name:'MIGUEL', car:'BMW E46 M3', x:-4.5},
+    {name:'TIAGO',  car:'Honda EG6',  x:0   },
+    {name:'JOÃO',   car:'Golf R Mk7', x:4.5 },
+  ];
+
+  const rimGroups = [];
+
+  memberData.forEach((m,i)=>{
+    const g = new THREE.Group();
+    g.position.set(m.x, 0.5, 0);
+
+    // ── WHEEL RIM (more detailed) ──
+    const rimGroup = new THREE.Group();
+
+    // outer tire (torus)
+    const tireMat = new THREE.MeshStandardMaterial({
+      color:0x1a1208,metalness:.2,roughness:.9,
+    });
+    const tireWire = new THREE.MeshBasicMaterial({color:TERR,wireframe:true,transparent:true,opacity:.3});
+    rimGroup.add(new THREE.Mesh(new THREE.TorusGeometry(1,.3,14,48),tireMat));
+    rimGroup.add(new THREE.Mesh(new THREE.TorusGeometry(1,.3,14,48),tireWire));
+
+    // 5 spokes (Dayton/lowrider style — many thin spokes)
+    const spokesCount = 10;
+    const spokeMat = new THREE.MeshStandardMaterial({color:Y,metalness:.9,roughness:.2});
+    for(let s=0;s<spokesCount;s++){
+      const a=(s/spokesCount)*Math.PI*2;
+      const spoke = new THREE.Mesh(new THREE.CylinderGeometry(.025,.015,.78,4),spokeMat);
+      spoke.position.set(Math.cos(a)*.39,Math.sin(a)*.39,.01);
+      spoke.rotation.z=a+Math.PI/2;
+      rimGroup.add(spoke);
+    }
+
+    // center cap
+    const capMat = new THREE.MeshStandardMaterial({color:TERR2,metalness:.8,roughness:.3});
+    rimGroup.add(new THREE.Mesh(new THREE.CylinderGeometry(.15,.15,.06,16),capMat));
+    rimGroup.children[rimGroup.children.length-1].rotation.x=Math.PI/2;
+
+    // inner rim ring
+    const innerRing = new THREE.Mesh(new THREE.TorusGeometry(.7,.04,8,48),
+      new THREE.MeshStandardMaterial({color:Y,metalness:.95,roughness:.1}));
+    rimGroup.add(innerRing);
+
+    // outer chrome ring
+    rimGroup.add(new THREE.Mesh(new THREE.TorusGeometry(.98,.03,6,48),
+      new THREE.MeshStandardMaterial({color:0xddccaa,metalness:.9,roughness:.15})));
+
+    g.add(rimGroup);
+
+    // ── PHOTO CARD (behind rim) ──
+    const cardMat = new THREE.MeshStandardMaterial({color:0x0e0b06,roughness:1});
+    const card = new THREE.Mesh(new THREE.PlaneGeometry(2.4,3.2),cardMat);
+    card.position.z = -0.3;
+    g.add(card);
+
+    // card border
+    const brd = new THREE.Mesh(new THREE.PlaneGeometry(2.4,3.2),
+      new THREE.MeshBasicMaterial({color:TERR,wireframe:true,transparent:true,opacity:.35}));
+    brd.position.z=-0.29;
+    g.add(brd);
+
+    // name bar (yellow plane at bottom of card)
+    const nameBg = new THREE.Mesh(new THREE.PlaneGeometry(2.4,.5),
+      new THREE.MeshBasicMaterial({color:TERR,transparent:true,opacity:.7}));
+    nameBg.position.set(0,-1.35,-0.28);
+    g.add(nameBg);
+
+    // accent line above name
+    g.add(Object.assign(
+      new THREE.Mesh(new THREE.PlaneGeometry(2.4,.025),
+        new THREE.MeshBasicMaterial({color:Y,transparent:true,opacity:.5})),
+      {position:new THREE.Vector3(0,-1.1,-0.27)}
+    ));
+
+    // photo placeholder cross
+    const ph1 = new THREE.Mesh(new THREE.PlaneGeometry(.01,2.4),new THREE.MeshBasicMaterial({color:TERR,transparent:true,opacity:.12}));
+    ph1.position.z=-.289;
+    g.add(ph1);
+    const ph2 = new THREE.Mesh(new THREE.PlaneGeometry(2.1,.01),new THREE.MeshBasicMaterial({color:TERR,transparent:true,opacity:.12}));
+    ph2.position.set(0,.2,-.289);
+    g.add(ph2);
+
+    g._rimGroup = rimGroup;
+    g._targetRY = 0;
+    g._targetRX = 0;
+    g._hovered = false;
+    g._baseX = m.x;
+
+    scene.add(g);
+    rimGroups.push(g);
+  });
+
+  // point light that follows mouse
+  const movLight = new THREE.PointLight(0xc4612a,1.5,15);
+  scene.add(movLight);
+
+  /* ── BACKGROUND GRID ── */
+  const bgGrid = new THREE.Group();
+  for(let i=-8;i<=8;i++){
+    const vl = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(i*1.2,-4,-15),new THREE.Vector3(i*1.2,-4,5)]),
+      new THREE.LineBasicMaterial({color:TERR,transparent:true,opacity:.08})
+    );
+    bgGrid.add(vl);
+  }
+  for(let j=-1;j<=8;j++){
+    const hl = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-12,-4,-j*2.5),new THREE.Vector3(12,-4,-j*2.5)]),
+      new THREE.LineBasicMaterial({color:TERR,transparent:true,opacity:.06})
+    );
+    bgGrid.add(hl);
+  }
+  scene.add(bgGrid);
+
+  /* ── MOUSE ── */
+  let mx=0,my=0,hovI=-1;
+  canvas.addEventListener('mousemove',e=>{
+    const r=canvas.getBoundingClientRect();
+    mx=(e.clientX-r.left)/r.width*2-1;
+    my=-((e.clientY-r.top)/r.height)*2+1;
+    // which third is hovered?
+    const nx=(e.clientX-r.left)/r.width;
+    hovI = nx<0.33?0:nx<0.66?1:2;
+    rimGroups.forEach((g,i)=>{
+      g._hovered = i===hovI;
+      g._targetRY = i===hovI ? -mx*0.5 : 0;
+      g._targetRX = i===hovI ? my*0.3  : 0;
+    });
+    movLight.position.set(mx*8, my*4, 4);
+  });
+  canvas.addEventListener('mouseleave',()=>{
+    hovI=-1;
+    rimGroups.forEach(g=>{g._hovered=false;g._targetRY=0;g._targetRX=0;});
+  });
+
+  const clock=new THREE.Clock();
+  function animate(){
+    requestAnimationFrame(animate);
+    const t=clock.getElapsedTime();
+
+    rimGroups.forEach((g,i)=>{
+      // rim spins continuously
+      g._rimGroup.rotation.z -= g._hovered ? .04 : .015;
+      // card tilt
+      g.rotation.y += (g._targetRY - g.rotation.y)*.07;
+      g.rotation.x += (g._targetRX - g.rotation.x)*.07;
+      // hover lift
+      const targetY = Math.sin(t*.5+i*1.3)*.12 + (g._hovered?.3:0);
+      g.position.y += (targetY - g.position.y)*.05;
+      // hover scale
+      const ts = g._hovered?1.08:1;
+      g.scale.x+=(ts-g.scale.x)*.07;
+      g.scale.y+=(ts-g.scale.y)*.07;
+    });
+
+    ptL.position.x=Math.sin(t*.4)*6;
+    ptL.position.y=Math.cos(t*.3)*2+2;
+    ptL.intensity=1.5+Math.sin(t*2)*.5;
+
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
+</script>
+</body>
+</html>
