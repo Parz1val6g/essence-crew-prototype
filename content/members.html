@@ -446,7 +446,7 @@ function mkWallTitleTex(){
   const _vw=(_met.actualBoundingBoxLeft!=null)
     ?_met.actualBoundingBoxLeft+_met.actualBoundingBoxRight
     :_met.width*1.12;
-  essH=Math.floor(essH*(W*0.90/_vw));
+  essH=Math.floor(essH*Math.min(1,W*0.90/_vw)); // only scale down, never up
   cx.font=`italic bold ${essH}px Impact,'Arial Black',sans-serif`;
   cx.textAlign='center'; cx.textBaseline='middle';
 
