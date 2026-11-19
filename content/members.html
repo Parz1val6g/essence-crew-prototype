@@ -76,7 +76,7 @@ footer{padding:60px 48px 40px;border-top:1px solid rgba(196,97,42,.1);
 @media(max-width:768px){
   nav{padding:14px 20px;}
   .nav-links{display:none;}
-  .info-panel{right:5vw;width:calc(100vw - 10vw);top:auto;bottom:10vh;transform:none;padding:0 4px;}
+  .info-panel{right:5vw;width:calc(100vw - 10vw);top:auto;bottom:10vh;transform:none;padding:16px 14px 10px;background:linear-gradient(to top,rgba(10,8,6,.8) 0%,rgba(10,8,6,0) 100%);}
   .m-name{font-size:clamp(1.6rem,8vw,2.8rem);}
   .m-desc{font-size:.75rem;line-height:1.65;}
   .m-tags{gap:5px;}
@@ -166,7 +166,8 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader }     from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader }    from 'three/addons/loaders/DRACOLoader.js';
 
-const N=4, HERO_VH=100, STEP_VH=120, SECT_VH=160;
+const isMobile = innerWidth < 768;
+const N=4, HERO_VH=100, STEP_VH=isMobile?80:120, SECT_VH=isMobile?120:160;
 
 function vh(v){ return v*innerHeight/100; }
 function lerp(a,b,t){ return a+(b-a)*t; }
@@ -184,7 +185,6 @@ let totalScroll=totalVH*innerHeight/100;
 // GLB car has front at +Z after MODEL_ROT_Y=PI correction.
 // PARK_RY=0.38 tilts front slightly toward +X → herringbone facing viewer.
 const PARK_RY = 0.38;
-const isMobile = innerWidth < 768;
 const SPOTS = isMobile ? [
   {x:-1.5, z:-3.2, ry:PARK_RY},
   {x: 1.5, z:-3.2, ry:PARK_RY},
@@ -433,17 +433,29 @@ for(let si=0;si<4;si++){
 
 /* ── CINEMATIC HERO: WALL TITLE STENCIL + PROJECTOR LIGHT ── */
 function mkWallTitleTex(){
-  const W=2048, H=512;
+  const W=isMobile?1240:2048, H=isMobile?480:661;
   const cv=document.createElement('canvas');
   cv.width=W; cv.height=H;
   const cx=cv.getContext('2d');
   cx.clearRect(0,0,W,H);
 
-  // ── ESSENCE: bold italic wide sans-serif ──
-  const essH=Math.floor(H*0.52);
-  const essY=H*0.36;
+  // ── ESSENCE: bold italic wide sans-serif — auto-fit to 92% canvas width ──
+  let essH=Math.floor(H*0.52);
+  cx.font=`italic bold ${essH}px Impact,'Arial Black',sans-serif`;
+  const _met=cx.measureText('ESSENCE');
+  const _vw=(_met.actualBoundingBoxLeft!=null)
+    ?_met.actualBoundingBoxLeft+_met.actualBoundingBoxRight
+    :_met.width*1.12;
+  essH=Math.floor(essH*(W*0.90/_vw));
   cx.font=`italic bold ${essH}px Impact,'Arial Black',sans-serif`;
   cx.textAlign='center'; cx.textBaseline='middle';
+
+  // ── Compute dynamic vertical centering for ESSENCE + CREW block ──
+  const crewH=Math.floor(H*0.185);
+  const gapH=Math.floor(H*0.06);
+  const totalH=essH+gapH+crewH;
+  const essY=Math.floor((H-totalH)/2+essH/2);
+  const crewY=Math.floor((H-totalH)/2+essH+gapH+crewH/2);
 
   // drop shadow
   cx.globalAlpha=0.20; cx.fillStyle='#000000';
@@ -470,9 +482,7 @@ function mkWallTitleTex(){
   cx.fillRect(0, lineY1-1, W, 1);
   cx.fillRect(0, lineY2-1, W, 1);
 
-  // ── CREW: wide-spaced bold centered below ──
-  const crewH=Math.floor(H*0.185);
-  const crewY=H*0.805;
+  // ── CREW: wide-spaced bold centered below (crewY computed above) ──
   cx.font=`bold ${crewH}px Impact,'Arial Black',sans-serif`;
   cx.textAlign='center'; cx.textBaseline='middle';
   try{ cx.letterSpacing=`${Math.floor(crewH*0.45)}px`; }catch(e){}
@@ -502,13 +512,181 @@ function mkWallTitleTex(){
 // Store texture once — reused for both map and emissiveMap so text has base glow
 const wallTex=mkWallTitleTex();
 const wallTitleMesh=new THREE.Mesh(
-  new THREE.PlaneGeometry(16,4),
+  new THREE.PlaneGeometry(isMobile?3.5:16,isMobile?2.0:4),
   new THREE.MeshStandardMaterial({map:wallTex,emissiveMap:wallTex,emissive:new THREE.Color(1,1,1),emissiveIntensity:0.45,transparent:true,roughness:0.95,metalness:0,envMapIntensity:0,depthWrite:false})
 );
 wallTitleMesh.position.set(0,2.0,-14.49);
 scene.add(wallTitleMesh);
+wallTitleMesh.visible=false;
 
-// Projector spotlight — cinematic key light on back wall during hero state
+// ── HANGING SIGN + CHAIN PHYSICS ──
+const SIGN_W=isMobile?3.1:9.3, SIGN_H=isMobile?1.2:3.0;
+const CHAIN_X=SIGN_W*0.5;
+const CHAIN_N=9;
+const LINK_L=0.180;
+const RAIL_Z0=-13.5, RAIL_Z1=isMobile?-1.8:-2.5, RAIL_Y=isMobile?4.0:4.5;
+
+// Ceiling rails
+const _railMat=new THREE.MeshStandardMaterial({color:0x4a5058,metalness:0.88,roughness:0.28});
+const _railLen=Math.abs(RAIL_Z0)+2.5;
+[-CHAIN_X,CHAIN_X].forEach(rx=>{
+  const r=new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.025,_railLen,8),_railMat);
+  r.rotation.x=Math.PI/2; r.position.set(rx,RAIL_Y,RAIL_Z0*0.5-1.25);
+  scene.add(r);
+});
+
+// Shared brushed-steel PBR for all chain hardware
+const _steelMat=new THREE.MeshStandardMaterial({color:0x9aa2aa,metalness:0.90,roughness:0.30});
+const _steelDarkMat=new THREE.MeshStandardMaterial({color:0x6e7880,metalness:0.88,roughness:0.35});
+
+// Slider brackets (trolleys) — ring clamps riding the rail
+const sliderL=new THREE.Mesh(new THREE.TorusGeometry(0.055,0.018,8,16),_steelMat);
+const sliderR=new THREE.Mesh(new THREE.TorusGeometry(0.055,0.018,8,16),_steelMat);
+sliderL.rotation.x=sliderR.rotation.x=Math.PI*0.5;
+scene.add(sliderL); scene.add(sliderR);
+
+// Stadium (oblong) chain link geometry — proper welded chain look
+// Path: two semicircles + two straight sections forming a rounded rectangle
+(function(){
+  const halfH=0.058, cornerR=0.032, tubeR=0.013, N=10;
+  const pts=[];
+  for(let i=0;i<=N;i++){const a=i/N*Math.PI; pts.push(new THREE.Vector3(Math.cos(a)*cornerR,halfH+Math.sin(a)*cornerR,0));}
+  pts.push(new THREE.Vector3(-cornerR,-halfH,0));
+  for(let i=0;i<=N;i++){const a=Math.PI+i/N*Math.PI; pts.push(new THREE.Vector3(Math.cos(a)*cornerR,-halfH+Math.sin(a)*cornerR,0));}
+  pts.push(new THREE.Vector3(cornerR,halfH,0));
+  const curve=new THREE.CatmullRomCurve3(pts,true,'catmullrom',0.0);
+  const linkGeo=new THREE.TubeGeometry(curve,36,tubeR,8,true);
+  window._chainLinkGeo=linkGeo;
+})();
+const chainLinkMesh=new THREE.InstancedMesh(window._chainLinkGeo,_steelMat,2*(CHAIN_N-1));
+chainLinkMesh.castShadow=false;
+scene.add(chainLinkMesh);
+const _d=new THREE.Object3D();
+const _UP=new THREE.Vector3(0,1,0);
+const _AXISX=new THREE.Vector3(1,0,0);
+const _chainDir=new THREE.Vector3();
+const _qBase=new THREE.Quaternion();
+const _qAlt=new THREE.Quaternion();
+
+// Sign mesh — front face (index 4) has logo; back face (index 5) plain dark
+const _signFrontMat=new THREE.MeshStandardMaterial({map:wallTex,emissiveMap:wallTex,
+  emissive:new THREE.Color(1,1,1),emissiveIntensity:0.12,roughness:0.90,metalness:0.0});
+const _signEdgeMat=new THREE.MeshStandardMaterial({color:0x1a1612,roughness:0.8,metalness:0.1});
+const _signBackMat=new THREE.MeshStandardMaterial({color:0x0d0b09,roughness:0.9,metalness:0.0});
+const signMesh=new THREE.Mesh(
+  new THREE.BoxGeometry(SIGN_W,SIGN_H,0.055),
+  [_signEdgeMat,_signEdgeMat,_signEdgeMat,_signEdgeMat,_signFrontMat,_signBackMat]
+);
+signMesh.castShadow=true;
+scene.add(signMesh);
+
+// Eyebolts — welded to sign top corners, give the chain a clean anchor point
+const _eyeboltShaftGeo=new THREE.CylinderGeometry(0.011,0.011,0.07,8);
+const _eyeRingGeo=new THREE.TorusGeometry(0.022,0.009,8,12);
+[-SIGN_W*0.5, SIGN_W*0.5].forEach(ex=>{
+  const shaft=new THREE.Mesh(_eyeboltShaftGeo,_steelMat);
+  shaft.position.set(ex,SIGN_H*0.5+0.035,0);
+  signMesh.add(shaft);
+  const eye=new THREE.Mesh(_eyeRingGeo,_steelDarkMat);
+  eye.position.set(ex,SIGN_H*0.5+0.072,0);
+  signMesh.add(eye);
+});
+
+// Chain Verlet state
+function _mkChain(x){
+  const a=[];
+  for(let i=0;i<CHAIN_N;i++){
+    const p=new THREE.Vector3(x,RAIL_Y-i*LINK_L,RAIL_Z0);
+    a.push({pos:p.clone(),prev:p.clone()});
+  }
+  return a;
+}
+const _cL=_mkChain(-CHAIN_X), _cR=_mkChain(CHAIN_X);
+let _prevRZ=RAIL_Z0;
+
+function tickChain(heroRaw){
+  const rz=lerp(RAIL_Z0,RAIL_Z1,easeInOut(clamp(heroRaw,0,1)));
+  const effL=lerp(LINK_L,0.145,easeInOut(clamp(heroRaw,0,1)));
+  const G=0.0024, DK=0.9, IT=8;
+
+  // Pin node 0: encode rail velocity via prev position
+  _cL[0].prev.set(-CHAIN_X,RAIL_Y,_prevRZ); _cL[0].pos.set(-CHAIN_X,RAIL_Y,rz);
+  _cR[0].prev.set( CHAIN_X,RAIL_Y,_prevRZ); _cR[0].pos.set( CHAIN_X,RAIL_Y,rz);
+
+  // Verlet integration on free nodes (gravity + air drag)
+  [_cL,_cR].forEach(ch=>{
+    for(let i=1;i<CHAIN_N;i++){
+      const n=ch[i];
+      const vx=(n.pos.x-n.prev.x)*DK,vy=(n.pos.y-n.prev.y)*DK,vz=(n.pos.z-n.prev.z)*DK;
+      n.prev.copy(n.pos);
+      n.pos.x+=vx; n.pos.y+=vy-G; n.pos.z+=vz;
+    }
+  });
+
+  // Constraint satisfaction
+  for(let it=0;it<IT;it++){
+    [_cL,_cR].forEach((ch,ci)=>{
+      ch[0].pos.set(ci===0?-CHAIN_X:CHAIN_X,RAIL_Y,rz);
+      for(let i=0;i<CHAIN_N-1;i++){
+        const a=ch[i].pos,b=ch[i+1].pos;
+        const dx=b.x-a.x,dy=b.y-a.y,dz=b.z-a.z;
+        const dist=Math.sqrt(dx*dx+dy*dy+dz*dz);
+        if(dist<1e-5) continue;
+        const f=(dist-effL)/dist, hx=dx*f*0.5,hy=dy*f*0.5,hz=dz*f*0.5;
+        if(i===0){b.x-=hx*2;b.y-=hy*2;b.z-=hz*2;}
+        else{a.x+=hx;a.y+=hy;a.z+=hz;b.x-=hx;b.y-=hy;b.z-=hz;}
+      }
+    });
+    // Rigid constraint: keep chain bottoms at sign width apart
+    const bL=_cL[CHAIN_N-1].pos,bR=_cR[CHAIN_N-1].pos;
+    const dx=bR.x-bL.x,dy=bR.y-bL.y,dz=bR.z-bL.z;
+    const dist=Math.sqrt(dx*dx+dy*dy+dz*dz);
+    if(dist>1e-5){const f=(dist-SIGN_W)/dist*0.5;
+      bL.x+=dx*f;bL.y+=dy*f;bL.z+=dz*f;
+      bR.x-=dx*f;bR.y-=dy*f;bR.z-=dz*f;}
+  }
+
+  // Sign rigid body — position + rotation derived from chain endpoints
+  const bL=_cL[CHAIN_N-1].pos,bR=_cR[CHAIN_N-1].pos;
+  const mx=(bL.x+bR.x)*0.5,my=(bL.y+bR.y)*0.5,mz=(bL.z+bR.z)*0.5;
+  signMesh.position.set(mx,my-SIGN_H*0.5,mz);
+  signMesh.rotation.z=Math.atan2(bR.y-bL.y,bR.x-bL.x);
+  // Pitch from full chain direction (rail top → sign bottom) — gives visible swing
+  const tL=_cL[0].pos,tR=_cR[0].pos;
+  const chainDZ=((bL.z-tL.z)+(bR.z-tR.z))*0.5;
+  const chainDY=((bL.y-tL.y)+(bR.y-tR.y))*0.5;
+  signMesh.rotation.x=clamp(Math.atan2(chainDZ,-chainDY),-0.35,0.35);
+  signMesh.rotation.y=0;
+
+  // Slider positions
+  sliderL.position.set(-CHAIN_X,RAIL_Y,rz);
+  sliderR.position.set( CHAIN_X,RAIL_Y,rz);
+
+  // Orient each link: local Y → segment direction (robust antiparallel handling),
+  // then alternate 0 / PI/2 around that axis for strict 0°,90°,0°,90° interlocking
+  let idx=0;
+  _d.scale.set(1,1,1);
+  [_cL,_cR].forEach(ch=>{
+    for(let i=0;i<CHAIN_N-1;i++){
+      const a=ch[i].pos,b=ch[i+1].pos;
+      _d.position.set((a.x+b.x)*0.5,(a.y+b.y)*0.5,(a.z+b.z)*0.5);
+      _chainDir.subVectors(b,a).normalize();
+      const dot=_UP.dot(_chainDir);
+      if(dot<-0.9999)      _qBase.setFromAxisAngle(_AXISX,Math.PI); // straight down
+      else if(dot>0.9999)  _qBase.identity();                        // straight up
+      else                 _qBase.setFromUnitVectors(_UP,_chainDir);
+      _qAlt.setFromAxisAngle(_chainDir, i%2===0 ? 0 : Math.PI*0.5);
+      _d.quaternion.multiplyQuaternions(_qAlt,_qBase);
+      _d.updateMatrix();
+      chainLinkMesh.setMatrixAt(idx++,_d.matrix);
+    }
+  });
+  chainLinkMesh.instanceMatrix.needsUpdate=true;
+
+  _prevRZ=rz;
+}
+
+// Projector spotlight — tracks sign position
 const projectorLight=new THREE.SpotLight(0xf5ddb0,14,30,Math.PI/10,0.30,1.5);
 projectorLight.position.set(0,3.2,-7);
 projectorLight.target.position.set(0,2.0,-14.5);
@@ -735,7 +913,7 @@ document.addEventListener('mousemove',e=>mx=(e.clientX/innerWidth-.5)*2);
 document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},{passive:false});
 // Hero camera state — starts deep in garage looking at the stencil back wall
 let camX=0,camY=1.8,camZ=-6;
-let camLookX=0,camLookY=1.6,camLookZ=-14.5;
+let camLookX=0,camLookY=isMobile?2.0:1.6,camLookZ=-14.5;
 const SMOOTH=0.18;
 const lastSectP=Array(N).fill(0);
 const reversingStateArr=Array(N).fill(false);
@@ -754,6 +932,7 @@ function animate(){
 
   updateTargets();
   const heroRaw=clamp(scrollY/vh(HERO_VH),0,1);
+  tickChain(heroRaw);
 
   // ── Cinematic scroll-driven camera pullback ──
   // Phase A (0→45%): deep in garage → corridor mouth, projector lit wall recedes
@@ -762,7 +941,7 @@ function animate(){
   const hB=easeInOut(clamp((heroRaw-0.45)/0.55,0,1));
   const tCamY=lerp(lerp(1.8,2.1,hA),isMobile?2.0:2.5,hB);
   const tCamZ=lerp(lerp(-6.0,1.0,hA),isMobile?7.0:10.0,hB);
-  const tLookY=lerp(lerp(1.6,0.6,hA),0.0,hB);
+  const tLookY=lerp(lerp(isMobile?2.0:1.6,0.6,hA),0.0,hB);
   const tLookZ=lerp(lerp(-14.5,-5.5,hA),isMobile?-2.0:-1.5,hB);
   // Mouse parallax only once fully in showcase
   const mxPar=isMobile?0:tCamZ*mx*0.04*hB;
@@ -915,7 +1094,8 @@ function animate(){
   uplighters.forEach(ul=>{ ul.intensity=ulI; });
   barLights.forEach(bl=>{ bl.intensity=lerp(2.0,4.5,easeOut(heroRaw)); });
   // Wall emissive also ramps up so logo stays readable at any camera distance
-  wallTitleMesh.material.emissiveIntensity=lerp(0.35,0.90,easeOut(heroRaw));
+  signMesh.material[4].emissiveIntensity=lerp(0.10,0.18,easeOut(heroRaw));
+  projectorLight.target.position.copy(signMesh.position);
 
   composer.render();
 }
